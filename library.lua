@@ -253,6 +253,7 @@ function EZUI.new(config)
     cleanupExistingUI()
     config = config or {}
     local self = setmetatable({}, EZUI)
+    self.UserConfig = config
     
     self.Title = config.Title or "EZUI"
     self.LogoText = config.LogoText or "EZ"
@@ -265,10 +266,12 @@ function EZUI.new(config)
     -- Theme Setup
     if type(config.Theme) == "string" and PRESET_THEMES[config.Theme] then
         self.Theme = table.clone(PRESET_THEMES[config.Theme])
+        self.CurrentThemeName = config.Theme
     elseif type(config.Theme) == "table" then
         self.Theme = table.clone(config.Theme)
     else
         self.Theme = table.clone(PRESET_THEMES.Green)
+        self.CurrentThemeName = "Green"
     end
 
     if config.AccentColor then
@@ -289,6 +292,14 @@ function EZUI.new(config)
     
     self:_buildGui()
     self:_setupInputs()
+
+    if config.Title then
+        self:SetTitle(config.Title)
+    end
+
+    if config.FooterText then
+        self:SetFooterText(config.FooterText)
+    end
 
     if config.Logo or config.LogoImage or config.LogoText then
         self:SetLogo(config.Logo or config.LogoImage or config.LogoText)
@@ -559,16 +570,17 @@ function EZUI:LoadConfig()
             if content and #content > 0 then
                 local cfg = HttpService:JSONDecode(content)
                 if cfg then
-                    if cfg.Banner and cfg.Banner ~= "" then 
+                    local userCfg = self.UserConfig or {}
+                    if cfg.Banner and cfg.Banner ~= "" and not userCfg.Banner then 
                         self:SetBanner(cfg.Banner, true) 
                     end
-                    if cfg.Theme then 
+                    if cfg.Theme and not userCfg.Theme then 
                         self:SetTheme(cfg.Theme, true) 
                     end
-                    if cfg.Opacity then 
+                    if cfg.Opacity and not userCfg.Opacity then 
                         self:SetOpacity(cfg.Opacity, true) 
                     end
-                    if cfg.Font then 
+                    if cfg.Font and not userCfg.Font then 
                         self:SetFont(cfg.Font, true) 
                     end
                 end
@@ -627,6 +639,21 @@ function EZUI:SetTitle(titleText)
     self.Title = titleText or ""
     if self.TitleText then
         self.TitleText.Text = self.Title
+    end
+end
+
+function EZUI:SetSubHeaderTitle(titleText)
+    if self.ScreenTitleText then
+        self.ScreenTitleText.Text = titleText or ""
+    end
+end
+
+function EZUI:SetSubHeaderVisible(visible)
+    if self.SubHeader then
+        self.SubHeader.Visible = visible
+        if self.TabBar then
+            self.TabBar.Position = visible and UDim2.new(0, 0, 0, 104) or UDim2.new(0, 0, 0, 80)
+        end
     end
 end
 
@@ -766,7 +793,6 @@ function EZUI:_applyTheme()
     self.SideTopAccent.BackgroundColor3 = theme.AccentColor
     if self.SideTitle then self.SideTitle.Font = self.Font end
     if self.PreviewText then self.PreviewText.Font = self.Font end
-    if self.ScrollIndicatorThumb then self.ScrollIndicatorThumb.BackgroundColor3 = theme.AccentColor end
     
     self:_buildHeaders()
     self:_buildTabContent()
@@ -876,7 +902,7 @@ function EZUI:_buildGui()
     titleText.Parent = banner
     self.TitleText = titleText
 
-    -- Sub-Header Screen Title Bar (Reference Design Element)
+    -- Sub-Header Screen Title Bar
     local subHeader = Instance.new("Frame")
     subHeader.Size = UDim2.new(1, 0, 0, 24)
     subHeader.Position = UDim2.new(0, 0, 0, 80)
@@ -912,14 +938,6 @@ function EZUI:_buildGui()
     tabBorder.BorderSizePixel = 0
     tabBorder.Parent = tabBar
 
-    local activeLine = Instance.new("Frame")
-    activeLine.AnchorPoint = Vector2.new(0, 1)
-    activeLine.Position = UDim2.new(0, 0, 1, 0)
-    activeLine.BackgroundColor3 = self.Theme.AccentColor
-    activeLine.BorderSizePixel = 0
-    activeLine.Parent = tabBar
-    self.ActiveLine = activeLine
-
     -- Body Area Container
     local bodyContainer = Instance.new("Frame")
     bodyContainer.Size = UDim2.new(1, 0, 0, MAX_VISIBLE * ROW_HEIGHT)
@@ -928,42 +946,6 @@ function EZUI:_buildGui()
     bodyContainer.BorderSizePixel = 0
     bodyContainer.ClipsDescendants = true
     bodyContainer.Parent = window
-
-    -- Left Scroll Indicator Bar (Reference Design Element)
-    local scrollIndicatorTrack = Instance.new("Frame")
-    scrollIndicatorTrack.Size = UDim2.new(0, 3, 1, -16)
-    scrollIndicatorTrack.Position = UDim2.new(0, 4, 0, 8)
-    scrollIndicatorTrack.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    scrollIndicatorTrack.BorderSizePixel = 0
-    scrollIndicatorTrack.Parent = bodyContainer
-
-    local upArrow = Instance.new("TextLabel")
-    upArrow.Size = UDim2.fromOffset(8, 8)
-    upArrow.Position = UDim2.new(0, 2, 0, 0)
-    upArrow.BackgroundTransparency = 1
-    upArrow.Text = "▲"
-    upArrow.Font = Enum.Font.GothamBold
-    upArrow.TextSize = 8
-    upArrow.TextColor3 = self.Theme.TextGray
-    upArrow.Parent = bodyContainer
-
-    local downArrow = Instance.new("TextLabel")
-    downArrow.Size = UDim2.fromOffset(8, 8)
-    downArrow.Position = UDim2.new(0, 2, 1, -8)
-    downArrow.BackgroundTransparency = 1
-    downArrow.Text = "▼"
-    downArrow.Font = Enum.Font.GothamBold
-    downArrow.TextSize = 8
-    downArrow.TextColor3 = self.Theme.TextGray
-    downArrow.Parent = bodyContainer
-
-    local scrollIndicatorThumb = Instance.new("Frame")
-    scrollIndicatorThumb.Size = UDim2.new(1, 0, 0.4, 0)
-    scrollIndicatorThumb.Position = UDim2.new(0, 0, 0, 0)
-    scrollIndicatorThumb.BackgroundColor3 = self.Theme.AccentColor
-    scrollIndicatorThumb.BorderSizePixel = 0
-    scrollIndicatorThumb.Parent = scrollIndicatorTrack
-    self.ScrollIndicatorThumb = scrollIndicatorThumb
 
     local innerScroll = Instance.new("Frame")
     innerScroll.Size = UDim2.fromScale(1, 1)
@@ -1267,16 +1249,6 @@ function EZUI:_updateHighlightAndScroll()
     
     self.FooterCounter.Text = tostring(self.SelectedIndex).." / "..tostring(#items)
 
-    -- Update Left Vertical Scroll Indicator Thumb Position & Size
-    if self.ScrollIndicatorThumb then
-        local scrollPct = (#items > MAX_VISIBLE) and (self.ScrollOffset / (#items - MAX_VISIBLE)) or 0
-        local thumbHeight = (#items > 0) and math.clamp(MAX_VISIBLE / #items, 0.2, 1.0) or 1.0
-        tween(self.ScrollIndicatorThumb, 0.2, {
-            Size = UDim2.new(1, 0, thumbHeight, 0),
-            Position = UDim2.new(0, 0, (1 - thumbHeight) * scrollPct, 0)
-        })
-    end
-
     for i, inst in pairs(self.RowInstances) do
         local isSel = (i == self.SelectedIndex)
         if inst.Label then
@@ -1502,12 +1474,17 @@ function EZUI:_buildHeaders()
     local n = #s.tabs
     if n == 0 then return end
 
-    if self.ScreenTitleText then
-        self.ScreenTitleText.Text = tab and tab.name or (s.parent and s.parent:sub(1,1):upper()..s.parent:sub(2).." Options" or "Main")
-    end
+    local currentTab = s.tabs[self.CurrentTabIndex]
 
-    self.ActiveLine.Size = UDim2.new(1/n, 0, 0, 2)
-    tween(self.ActiveLine, 0.25, {Position = UDim2.new((self.CurrentTabIndex-1)/n, 0, 1, 0)})
+    if self.ScreenTitleText then
+        if s.title then
+            self.ScreenTitleText.Text = s.title
+        elseif s.parent then
+            self.ScreenTitleText.Text = s.parent:sub(1,1):upper() .. s.parent:sub(2) .. " Options"
+        else
+            self.ScreenTitleText.Text = currentTab and currentTab.name or "Main"
+        end
+    end
 
     for idx, tab in ipairs(s.tabs) do
         local isSelected = (idx == self.CurrentTabIndex)
