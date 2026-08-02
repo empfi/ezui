@@ -223,6 +223,7 @@ function EZUI.new(config)
     self.MenuVisible = true
     self.RowInstances = {}
     self.Connections = {}
+    self.OnUninjectCallbacks = {}
     self.ActiveHeldKey = nil
     self.HoldThread = nil
     
@@ -244,21 +245,55 @@ function EZUI.new(config)
     return self
 end
 
-function EZUI:Destroy()
+function EZUI:OnUninject(callback)
+    if type(callback) == "function" then
+        table.insert(self.OnUninjectCallbacks, callback)
+    end
+end
+
+function EZUI:Uninject()
     self:_stopKeyHold()
     self:_unbindKeys()
+    
+    -- Disconnect input connections
     if self.Connections then
         for _, conn in ipairs(self.Connections) do
             pcall(function() conn:Disconnect() end)
         end
         table.clear(self.Connections)
     end
+    
+    -- Execute developer custom uninject callbacks
+    if self.OnUninjectCallbacks then
+        for _, cb in ipairs(self.OnUninjectCallbacks) do
+            pcall(cb)
+        end
+        table.clear(self.OnUninjectCallbacks)
+    end
+    
+    -- Reset Humanoid WalkSpeed and JumpPower back to Roblox defaults
+    pcall(function()
+        local char = LocalPlayer and LocalPlayer.Character
+        local hum = char and char:FindFirstChildOfClass("Humanoid")
+        if hum then
+            hum.WalkSpeed = 16
+            hum.JumpPower = 50
+        end
+    end)
+
+    -- Destroy UI ScreenGui
     if self.Gui then
         pcall(function() self.Gui:Destroy() end)
     end
+    
+    -- Clear global active instance
     if getgenv and getgenv().EZUI_ActiveInstance == self then
         getgenv().EZUI_ActiveInstance = nil
     end
+end
+
+function EZUI:Destroy()
+    self:Uninject()
 end
 
 function EZUI:SetFont(fontVal)
