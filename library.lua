@@ -128,9 +128,31 @@ local function parseFont(fontVal)
     return Enum.Font.GothamMedium
 end
 
+local BUILTIN_ICONS = {
+    User     = "rbxassetid://6031075931",
+    Shield   = "rbxassetid://6031082533",
+    Settings = "rbxassetid://6031280882",
+    Speed    = "rbxassetid://6031097225",
+    Eye      = "rbxassetid://6031094678",
+    Wrench   = "rbxassetid://6031265976",
+    Home     = "rbxassetid://6031075929",
+    Star     = "rbxassetid://6031094670",
+    Lock     = "rbxassetid://6031082529",
+    Check    = "rbxassetid://6031094667",
+    Cross    = "rbxassetid://6031094668",
+    Info     = "rbxassetid://6031094671",
+    Folder   = "rbxassetid://6031075925",
+    Car      = "rbxassetid://6031097223",
+    Sword    = "rbxassetid://6031082535",
+    Heart    = "rbxassetid://6031082528"
+}
+
 local function formatAssetId(icon)
     if not icon then return "" end
     local str = tostring(icon)
+    if BUILTIN_ICONS[str] then
+        return BUILTIN_ICONS[str]
+    end
     local digits = str:match("%d+")
     if str:find("rbxasset") or str:find("rbxthumb") or str:find("http") or str:find("://") then
         return str
@@ -167,6 +189,7 @@ end
 local EZUI = {}
 EZUI.__index = EZUI
 EZUI.Presets = PRESET_THEMES
+EZUI.Icons = BUILTIN_ICONS
 
 function EZUI.new(config)
     cleanupExistingUI()
