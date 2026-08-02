@@ -4,6 +4,10 @@
     Features:
     - Fixed Left-Side Position (No Dragging)
     - Full Theme & Accent Color Customization (Presets: Green, Purple, Blue, Red, Cyan, Dark)
+    - Global Proportional Opacity Control (ui:SetOpacity)
+    - Custom Font Support (Enum.Font or string name, ui:SetFont)
+    - Icons Everywhere (Tabs, Toggles, Sliders, Selectors, Buttons, Navs, Separators)
+    - Versatile Side Panel Preview Window (Text & Image Preview)
     - Customizable Header Logo (Image ID or Text) & Script Title
     - User-Defined Banner Image Support & Live Side-Panel Preview
     - Hold-to-Repeat Navigation & Slider adjustment
@@ -108,6 +112,34 @@ local function tween(obj, time, props)
     return t
 end
 
+local function parseFont(fontVal)
+    if typeof(fontVal) == "EnumItem" then
+        return fontVal
+    elseif type(fontVal) == "string" then
+        if Enum.Font[fontVal] then
+            return Enum.Font[fontVal]
+        end
+        for _, enumItem in ipairs(Enum.Font:GetEnumItems()) do
+            if enumItem.Name:lower():find(fontVal:lower()) then
+                return enumItem
+            end
+        end
+    end
+    return Enum.Font.GothamMedium
+end
+
+local function formatAssetId(icon)
+    if not icon then return "" end
+    local str = tostring(icon)
+    local digits = str:match("%d+")
+    if str:find("rbxasset") or str:find("rbxthumb") or str:find("http") or str:find("://") then
+        return str
+    elseif digits then
+        return "rbxassetid://" .. digits
+    end
+    return str
+end
+
 local function cleanupExistingUI()
     if getgenv then
         local active = getgenv().EZUI_ActiveInstance
@@ -145,6 +177,7 @@ function EZUI.new(config)
     self.LogoText = config.LogoText or "EZ"
     self.FooterText = config.FooterText or "EZUI Library | discord.gg/ezui"
     self.ToggleKey = config.ToggleKey or Enum.KeyCode.RightShift
+    self.Font = parseFont(config.Font or Enum.Font.GothamMedium)
     
     -- Theme Setup
     if type(config.Theme) == "string" and PRESET_THEMES[config.Theme] then
@@ -203,6 +236,11 @@ function EZUI:Destroy()
     if getgenv and getgenv().EZUI_ActiveInstance == self then
         getgenv().EZUI_ActiveInstance = nil
     end
+end
+
+function EZUI:SetFont(fontVal)
+    self.Font = parseFont(fontVal)
+    self:_applyTheme()
 end
 
 function EZUI:SetTheme(themePresetOrTable)
@@ -276,7 +314,57 @@ end
 
 function EZUI:SetBanner(bannerUrlOrAssetId)
     if not self.BannerImage then return end
-    self.BannerImage.Image = bannerUrlOrAssetId or ""
+    self.BannerImage.Image = formatAssetId(bannerUrlOrAssetId)
+end
+
+function EZUI:SetOpacity(val)
+    local pct = math.clamp(tonumber(val) or 85, 0, 100) / 100
+    self.OpacityFraction = pct
+    
+    local transBg = 1 - (0.85 * pct)
+    local transSolid = 1 - (1.0 * pct)
+    
+    if self.Window then self.Window.BackgroundTransparency = transBg end
+    if self.Banner then self.Banner.BackgroundTransparency = transSolid end
+    if self.BannerFiller then self.BannerFiller.BackgroundTransparency = transSolid end
+    if self.BannerImage then self.BannerImage.ImageTransparency = transSolid end
+    if self.TabBar then self.TabBar.BackgroundTransparency = transSolid end
+    if self.HighlightBox then self.HighlightBox.BackgroundTransparency = transBg end
+    if self.FooterBar then self.FooterBar.BackgroundTransparency = transSolid end
+    if self.FooterFiller then self.FooterFiller.BackgroundTransparency = transSolid end
+    if self.SidePanel then self.SidePanel.BackgroundTransparency = transBg end
+    if self.PreviewImage then self.PreviewImage.ImageTransparency = transSolid end
+    if self.SideTopAccent then self.SideTopAccent.BackgroundTransparency = transSolid end
+    
+    if self.EzLogoText then self.EzLogoText.TextTransparency = transSolid end
+    if self.EzLogoImage then self.EzLogoImage.ImageTransparency = transSolid end
+    if self.TitleText then self.TitleText.TextTransparency = transSolid end
+    if self.SideTitle then self.SideTitle.TextTransparency = transSolid end
+    if self.PreviewText then self.PreviewText.TextTransparency = transSolid end
+    if self.FooterLeft then self.FooterLeft.TextTransparency = transSolid end
+    if self.FooterCounter then self.FooterCounter.TextTransparency = transSolid end
+
+    for _, inst in pairs(self.RowInstances) do
+        if inst.IconImage then
+            inst.IconImage.ImageTransparency = transSolid
+        end
+    end
+end
+
+function EZUI:SetSidePreview(item, previewConfig)
+    if type(item) == "table" then
+        item.preview = previewConfig
+    end
+    self:_updateSidePanel()
+    return item
+end
+
+function EZUI:SetItemIcon(item, icon)
+    if type(item) == "table" then
+        item.icon = icon
+    end
+    self:_buildTabContent()
+    return item
 end
 
 function EZUI:_applyTheme()
@@ -285,16 +373,22 @@ function EZUI:_applyTheme()
     self.Banner.BackgroundColor3 = theme.HeaderBg
     self.BannerFiller.BackgroundColor3 = theme.HeaderBg
     self.EzLogoText.TextColor3 = theme.AccentColor
+    self.EzLogoText.Font = self.Font
     self.EzLogoImage.ImageColor3 = Color3.new(1, 1, 1)
     self.TitleText.TextColor3 = theme.AccentColor
+    self.TitleText.Font = self.Font
     self.TabBar.BackgroundColor3 = theme.TabBarBg
     self.HighlightBox.BackgroundColor3 = theme.HighlightBg
     self.FooterBar.BackgroundColor3 = theme.HeaderBg
     self.FooterFiller.BackgroundColor3 = theme.HeaderBg
     self.FooterLeft.TextColor3 = theme.TextGray
+    self.FooterLeft.Font = self.Font
     self.FooterCounter.TextColor3 = theme.TextGray
+    self.FooterCounter.Font = self.Font
     self.SidePanel.BackgroundColor3 = theme.WindowBg
     self.SideTopAccent.BackgroundColor3 = theme.AccentColor
+    if self.SideTitle then self.SideTitle.Font = self.Font end
+    if self.PreviewText then self.PreviewText.Font = self.Font end
     
     self:_buildHeaders()
     self:_buildTabContent()
@@ -380,7 +474,7 @@ function EZUI:_buildGui()
     ezLogoText.Position = UDim2.fromOffset(16, 16)
     ezLogoText.BackgroundTransparency = 1
     ezLogoText.Text = self.LogoText or "EZ"
-    ezLogoText.Font = Enum.Font.GothamBlack
+    ezLogoText.Font = self.Font
     ezLogoText.TextSize = 34
     ezLogoText.TextColor3 = self.Theme.AccentColor
     ezLogoText.TextStrokeTransparency = 0.7 
@@ -395,7 +489,7 @@ function EZUI:_buildGui()
     titleText.Position = UDim2.new(1, -166, 0, 25)
     titleText.BackgroundTransparency = 1
     titleText.Text = self.Title or "EZUI"
-    titleText.Font = Enum.Font.GothamBlack
+    titleText.Font = self.Font
     titleText.TextSize = 24
     titleText.TextXAlignment = Enum.TextXAlignment.Right
     titleText.TextColor3 = self.Theme.AccentColor
@@ -479,7 +573,7 @@ function EZUI:_buildGui()
     footerLeft.BackgroundTransparency = 1
     footerLeft.Text = self.FooterText
     footerLeft.TextColor3 = self.Theme.TextGray
-    footerLeft.Font = Enum.Font.Gotham
+    footerLeft.Font = self.Font
     footerLeft.TextSize = 10
     footerLeft.TextXAlignment = Enum.TextXAlignment.Left
     footerLeft.Parent = footerBar
@@ -489,14 +583,14 @@ function EZUI:_buildGui()
     footerCounter.Size = UDim2.fromOffset(60, 26)
     footerCounter.Position = UDim2.new(1, -72, 0, 0)
     footerCounter.BackgroundTransparency = 1
-    footerCounter.Font = Enum.Font.Gotham
+    footerCounter.Font = self.Font
     footerCounter.TextSize = 10
     footerCounter.TextColor3 = self.Theme.TextGray
     footerCounter.TextXAlignment = Enum.TextXAlignment.Right
     footerCounter.Parent = footerBar
     self.FooterCounter = footerCounter
 
-    -- Side Panel (Live Banner Preview Window)
+    -- Side Panel (Live Preview Window)
     local sidePanel = Instance.new("Frame")
     sidePanel.Size = UDim2.fromOffset(180, 110)
     sidePanel.Position = UDim2.new(1, 10, 0, 0)
@@ -515,8 +609,8 @@ function EZUI:_buildGui()
     sideTitle.Size = UDim2.new(1, -20, 0, 26)
     sideTitle.Position = UDim2.fromOffset(10, 0)
     sideTitle.BackgroundTransparency = 1
-    sideTitle.Text = "Banner Preview"
-    sideTitle.Font = Enum.Font.GothamMedium
+    sideTitle.Text = "Preview"
+    sideTitle.Font = self.Font
     sideTitle.TextSize = 11
     sideTitle.TextColor3 = self.Theme.TextWhite
     sideTitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -547,7 +641,7 @@ function EZUI:_buildGui()
     previewText.Size = UDim2.new(1, -20, 1, -40)
     previewText.Position = UDim2.fromOffset(10, 32)
     previewText.BackgroundTransparency = 1
-    previewText.Font = Enum.Font.Gotham
+    previewText.Font = self.Font
     previewText.TextSize = 11
     previewText.TextColor3 = self.Theme.TextGray
     previewText.TextWrapped = true
@@ -556,42 +650,6 @@ function EZUI:_buildGui()
     previewText.Visible = false
     previewText.Parent = sidePanel
     self.PreviewText = previewText
-end
-
-function EZUI:SetOpacity(val)
-    local pct = math.clamp(tonumber(val) or 85, 0, 100) / 100
-    self.OpacityFraction = pct
-    
-    local transBg = 1 - (0.85 * pct)
-    local transSolid = 1 - (1.0 * pct)
-    
-    if self.Window then self.Window.BackgroundTransparency = transBg end
-    if self.Banner then self.Banner.BackgroundTransparency = transSolid end
-    if self.BannerFiller then self.BannerFiller.BackgroundTransparency = transSolid end
-    if self.BannerImage then self.BannerImage.ImageTransparency = transSolid end
-    if self.TabBar then self.TabBar.BackgroundTransparency = transSolid end
-    if self.HighlightBox then self.HighlightBox.BackgroundTransparency = transBg end
-    if self.FooterBar then self.FooterBar.BackgroundTransparency = transSolid end
-    if self.FooterFiller then self.FooterFiller.BackgroundTransparency = transSolid end
-    if self.SidePanel then self.SidePanel.BackgroundTransparency = transBg end
-    if self.PreviewImage then self.PreviewImage.ImageTransparency = transSolid end
-    if self.SideTopAccent then self.SideTopAccent.BackgroundTransparency = transSolid end
-    
-    if self.EzLogoText then self.EzLogoText.TextTransparency = transSolid end
-    if self.EzLogoImage then self.EzLogoImage.ImageTransparency = transSolid end
-    if self.TitleText then self.TitleText.TextTransparency = transSolid end
-    if self.SideTitle then self.SideTitle.TextTransparency = transSolid end
-    if self.PreviewText then self.PreviewText.TextTransparency = transSolid end
-    if self.FooterLeft then self.FooterLeft.TextTransparency = transSolid end
-    if self.FooterCounter then self.FooterCounter.TextTransparency = transSolid end
-end
-
-function EZUI:SetSidePreview(item, previewConfig)
-    if type(item) == "table" then
-        item.preview = previewConfig
-    end
-    self:_updateSidePanel()
-    return item
 end
 
 ----------------------------------------------------------------
@@ -608,35 +666,35 @@ function EZUI:CreateScreen(id, data)
     return self.Screens[id]
 end
 
-function EZUI:AddTab(screenId, name)
+function EZUI:AddTab(screenId, name, icon)
     local screen = self.Screens[screenId]
     if not screen then
         screen = self:CreateScreen(screenId)
     end
-    local tab = { name = name, items = {} }
+    local tab = { name = name, items = {}, icon = icon }
     table.insert(screen.tabs, tab)
     return tab
 end
 
-function EZUI:AddToggle(tab, name, default, onChange)
-    local item = { type = "toggle", name = name, value = default or false, onChange = onChange }
+function EZUI:AddToggle(tab, name, default, onChange, icon)
+    local item = { type = "toggle", name = name, value = default or false, onChange = onChange, icon = icon }
     table.insert(tab.items, item)
     return item
 end
 
-function EZUI:AddSlider(tab, name, min, max, default, step, onChange)
-    local item = { type = "slider", name = name, min = min, max = max, value = default or min, inc = step or 1, onChange = onChange }
+function EZUI:AddSlider(tab, name, min, max, default, step, onChange, icon)
+    local item = { type = "slider", name = name, min = min, max = max, value = default or min, inc = step or 1, onChange = onChange, icon = icon }
     table.insert(tab.items, item)
     return item
 end
 
-function EZUI:AddSelector(tab, name, options, default, onChange)
-    local item = { type = "selector", name = name, options = options, value = default or 1, onChange = onChange }
+function EZUI:AddSelector(tab, name, options, default, onChange, icon)
+    local item = { type = "selector", name = name, options = options, value = default or 1, onChange = onChange, icon = icon }
     table.insert(tab.items, item)
     return item
 end
 
-function EZUI:AddBannerSelector(tab, name, userOptions, defaultIndex, onChange)
+function EZUI:AddBannerSelector(tab, name, userOptions, defaultIndex, onChange, icon)
     name = name or "Banner"
     userOptions = userOptions or {}
     defaultIndex = defaultIndex or 1
@@ -649,7 +707,7 @@ function EZUI:AddBannerSelector(tab, name, userOptions, defaultIndex, onChange)
         if onChange then
             onChange(valIndex, selected, itemObj)
         end
-    end)
+    end, icon)
     item.isBanner = true
     
     if userOptions[defaultIndex] then
@@ -659,20 +717,20 @@ function EZUI:AddBannerSelector(tab, name, userOptions, defaultIndex, onChange)
     return item
 end
 
-function EZUI:AddButton(tab, name, onClick)
-    local item = { type = "button", name = name, onClick = onClick }
+function EZUI:AddButton(tab, name, onClick, icon)
+    local item = { type = "button", name = name, onClick = onClick, icon = icon }
     table.insert(tab.items, item)
     return item
 end
 
-function EZUI:AddSeparator(tab, name)
-    local item = { type = "sep", name = name or "" }
+function EZUI:AddSeparator(tab, name, icon)
+    local item = { type = "sep", name = name or "", icon = icon }
     table.insert(tab.items, item)
     return item
 end
 
-function EZUI:AddNav(tab, name, targetScreen)
-    local item = { type = "nav", name = name, target = targetScreen }
+function EZUI:AddNav(tab, name, targetScreen, icon)
+    local item = { type = "nav", name = name, target = targetScreen, icon = icon }
     table.insert(tab.items, item)
     return item
 end
@@ -718,7 +776,7 @@ function EZUI:_updateSidePanel()
         elseif p.type == "image" or p.image or p.id then
             local imgId = p.image or p.id or ""
             if self.PreviewImage then
-                self.PreviewImage.Image = imgId
+                self.PreviewImage.Image = formatAssetId(imgId)
                 self.PreviewImage.Visible = true
             end
             if self.PreviewText then
@@ -741,7 +799,7 @@ function EZUI:_updateSidePanel()
         local opt = item.options[item.value]
         if opt then
             if self.PreviewImage then
-                self.PreviewImage.Image = opt.id or ""
+                self.PreviewImage.Image = formatAssetId(opt.id)
                 self.PreviewImage.Visible = true
             end
             if self.PreviewText then
@@ -849,7 +907,7 @@ function EZUI:_buildTabContent()
                 txt.Position = UDim2.new(0.25, 0, 0, 0)
                 txt.BackgroundTransparency = 1
                 txt.Text = item.name
-                txt.Font = Enum.Font.GothamBold
+                txt.Font = self.Font
                 txt.TextSize = 10
                 txt.TextColor3 = Color3.fromRGB(120, 120, 120)
                 txt.Parent = sepFrame
@@ -869,12 +927,29 @@ function EZUI:_buildTabContent()
                 fullLine.Parent = sepFrame
             end
         else
+            local labelX = 16
+            local labelWidthOffset = 130
+
+            if item.icon and item.icon ~= "" then
+                local iconImg = Instance.new("ImageLabel")
+                iconImg.Size = UDim2.fromOffset(14, 14)
+                iconImg.Position = UDim2.fromOffset(16, 7)
+                iconImg.BackgroundTransparency = 1
+                iconImg.Image = formatAssetId(item.icon)
+                iconImg.ScaleType = Enum.ScaleType.Fit
+                iconImg.Parent = row
+                self.RowInstances[i].IconImage = iconImg
+                
+                labelX = 36
+                labelWidthOffset = 150
+            end
+
             local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1, -130, 1, 0)
-            label.Position = UDim2.fromOffset(16, 0)
+            label.Size = UDim2.new(1, -labelWidthOffset, 1, 0)
+            label.Position = UDim2.fromOffset(labelX, 0)
             label.BackgroundTransparency = 1
             label.Text = item.type == "slider" and (item.name..": "..tostring(item.value)) or item.name
-            label.Font = Enum.Font.GothamMedium
+            label.Font = self.Font
             label.TextSize = 11
             label.TextColor3 = self.Theme.TextGray
             label.TextXAlignment = Enum.TextXAlignment.Left
@@ -950,7 +1025,7 @@ function EZUI:_buildTabContent()
                 valLabel.Position = UDim2.new(1, -132, 0, 0)
                 valLabel.BackgroundTransparency = 1
                 valLabel.Text = "< " .. item.options[item.value].name .. " >"
-                valLabel.Font = Enum.Font.GothamMedium
+                valLabel.Font = self.Font
                 valLabel.TextSize = 11
                 valLabel.TextColor3 = self.Theme.TextGray
                 valLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -991,10 +1066,20 @@ function EZUI:_buildHeaders()
         btn.Position = UDim2.new((idx-1)/n, 0, 0, 0)
         btn.BackgroundTransparency = 1
         btn.Text = tab.name
-        btn.Font = Enum.Font.GothamBold
+        btn.Font = self.Font
         btn.TextSize = 11
         btn.TextColor3 = (idx == self.CurrentTabIndex) and self.Theme.TextWhite or self.Theme.TextGray
         btn.Parent = self.TabBar
+
+        if tab.icon and tab.icon ~= "" then
+            local tabIcon = Instance.new("ImageLabel")
+            tabIcon.Size = UDim2.fromOffset(12, 12)
+            tabIcon.Position = UDim2.new(0, 6, 0.5, -6)
+            tabIcon.BackgroundTransparency = 1
+            tabIcon.Image = formatAssetId(tab.icon)
+            tabIcon.ScaleType = Enum.ScaleType.Fit
+            tabIcon.Parent = btn
+        end
     end
 end
 
@@ -1109,7 +1194,14 @@ local function sinkInput(actionName, inputState, inputObject)
     return Enum.ContextActionResult.Sink
 end
 
+local StarterGui = game:GetService("StarterGui")
+
 function EZUI:_bindKeys()
+    pcall(function()
+        self.SavedPlayerListEnabled = StarterGui:GetCoreGuiEnabled(Enum.CoreGuiType.PlayerList)
+        StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+    end)
+
     ContextActionService:BindActionAtPriority(
         BLOCK_NAME, 
         sinkInput, 
@@ -1123,6 +1215,13 @@ function EZUI:_bindKeys()
 end
 
 function EZUI:_unbindKeys()
+    pcall(function()
+        if self.SavedPlayerListEnabled ~= nil then
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, self.SavedPlayerListEnabled)
+        else
+            StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, true)
+        end
+    end)
     ContextActionService:UnbindAction(BLOCK_NAME)
 end
 
@@ -1202,6 +1301,9 @@ function EZUI:_setupInputs()
         if not self.MenuVisible then return end
 
         if input.KeyCode == Enum.KeyCode.Tab then
+            pcall(function()
+                StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
+            end)
             local s = self:GetScreen()
             if s and #s.tabs > 0 then
                 self.CurrentTabIndex = (self.CurrentTabIndex % #s.tabs) + 1
