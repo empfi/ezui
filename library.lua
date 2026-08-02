@@ -2,17 +2,20 @@
     EZUI — Premium Minimalist Roblox UI Library
     
     Features:
-    - Fixed Left-Side Position (No Dragging)
-    - Full Theme & Accent Color Customization (Presets: Green, Purple, Blue, Red, Cyan, Dark)
+    - Premium Header & Sub-Header Screen Title Bar (as seen in reference UI design)
+    - Left Vertical Scroll Indicator Strip with Up/Down Chevrons (▲ / ▼)
+    - Active Tab Dark Highlight Styling with Smooth Accent Lines
     - Global Proportional Opacity Control (ui:SetOpacity)
-    - Custom Font Support (Enum.Font or string name, ui:SetFont)
+    - Instant Font Switcher (Enum.Font or string name, ui:SetFont) with expanded font presets
+    - Notification System with custom durations, 4 corners, and Info/Warning/Error states
     - Icons Everywhere (Tabs, Toggles, Sliders, Selectors, Buttons, Navs, Separators)
     - Versatile Side Panel Preview Window (Text & Image Preview)
     - Customizable Header Logo (Image ID or Text) & Script Title
     - User-Defined Banner Image Support & Live Side-Panel Preview
     - Hold-to-Repeat Navigation & Slider adjustment
     - Non-intrusive input sinking (WASD movement & Mouse Look preserved)
-    - Automatic Re-execution Teardown & Cleanup
+    - Automatic Workspace Config Persistence (EZUI_Config.json)
+    - Full Uninject / Teardown System (ui:Uninject())
 ]]
 
 local Players              = game:GetService("Players")
@@ -30,6 +33,7 @@ local PRESET_THEMES = {
     Green = {
         WindowBg       = Color3.fromRGB(15, 15, 15),
         HeaderBg       = Color3.fromRGB(18, 18, 18),
+        SubHeaderBg    = Color3.fromRGB(10, 10, 10),
         TabBarBg       = Color3.fromRGB(18, 18, 18),
         HighlightBg    = Color3.fromRGB(24, 58, 31),
         TextWhite      = Color3.fromRGB(255, 255, 255),
@@ -42,6 +46,7 @@ local PRESET_THEMES = {
     Purple = {
         WindowBg       = Color3.fromRGB(15, 15, 18),
         HeaderBg       = Color3.fromRGB(18, 18, 22),
+        SubHeaderBg    = Color3.fromRGB(10, 10, 14),
         TabBarBg       = Color3.fromRGB(18, 18, 22),
         HighlightBg    = Color3.fromRGB(45, 25, 65),
         TextWhite      = Color3.fromRGB(255, 255, 255),
@@ -54,6 +59,7 @@ local PRESET_THEMES = {
     Blue = {
         WindowBg       = Color3.fromRGB(14, 16, 20),
         HeaderBg       = Color3.fromRGB(18, 20, 26),
+        SubHeaderBg    = Color3.fromRGB(10, 12, 16),
         TabBarBg       = Color3.fromRGB(18, 20, 26),
         HighlightBg    = Color3.fromRGB(20, 45, 75),
         TextWhite      = Color3.fromRGB(255, 255, 255),
@@ -66,6 +72,7 @@ local PRESET_THEMES = {
     Red = {
         WindowBg       = Color3.fromRGB(18, 14, 14),
         HeaderBg       = Color3.fromRGB(22, 18, 18),
+        SubHeaderBg    = Color3.fromRGB(14, 10, 10),
         TabBarBg       = Color3.fromRGB(22, 18, 18),
         HighlightBg    = Color3.fromRGB(65, 25, 25),
         TextWhite      = Color3.fromRGB(255, 255, 255),
@@ -78,6 +85,7 @@ local PRESET_THEMES = {
     Cyan = {
         WindowBg       = Color3.fromRGB(14, 18, 20),
         HeaderBg       = Color3.fromRGB(18, 22, 24),
+        SubHeaderBg    = Color3.fromRGB(10, 14, 16),
         TabBarBg       = Color3.fromRGB(18, 22, 24),
         HighlightBg    = Color3.fromRGB(20, 60, 70),
         TextWhite      = Color3.fromRGB(255, 255, 255),
@@ -90,6 +98,7 @@ local PRESET_THEMES = {
     Dark = {
         WindowBg       = Color3.fromRGB(12, 12, 12),
         HeaderBg       = Color3.fromRGB(16, 16, 16),
+        SubHeaderBg    = Color3.fromRGB(8, 8, 8),
         TabBarBg       = Color3.fromRGB(16, 16, 16),
         HighlightBg    = Color3.fromRGB(35, 35, 35),
         TextWhite      = Color3.fromRGB(255, 255, 255),
@@ -113,15 +122,37 @@ local function tween(obj, time, props)
     return t
 end
 
+local FONT_MAP = {
+    Gotham         = Enum.Font.GothamMedium,
+    GothamMedium   = Enum.Font.GothamMedium,
+    GothamBold     = Enum.Font.GothamBold,
+    Roboto         = Enum.Font.RobotoMedium,
+    RobotoMedium   = Enum.Font.RobotoMedium,
+    SourceSans     = Enum.Font.SourceSansMedium,
+    SourceSansBold = Enum.Font.SourceSansBold,
+    FredokaOne     = Enum.Font.FredokaOne,
+    Arcade         = Enum.Font.Arcade,
+    Bodoni         = Enum.Font.Bodoni,
+    Fantasy        = Enum.Font.Fantasy,
+    Jura           = Enum.Font.Jura,
+    Nunito         = Enum.Font.Nunito,
+    Sarpanch       = Enum.Font.Sarpanch,
+    Ubuntu         = Enum.Font.Ubuntu,
+    BuilderSans    = Enum.Font.BuilderSansMedium,
+    Code           = Enum.Font.Code
+}
+
 local function parseFont(fontVal)
     if typeof(fontVal) == "EnumItem" then
         return fontVal
     elseif type(fontVal) == "string" then
-        if Enum.Font[fontVal] then
+        if FONT_MAP[fontVal] then
+            return FONT_MAP[fontVal]
+        elseif Enum.Font[fontVal] then
             return Enum.Font[fontVal]
         end
         for _, enumItem in ipairs(Enum.Font:GetEnumItems()) do
-            if enumItem.Name:lower():find(fontVal:lower()) then
+            if enumItem.Name:lower() == fontVal:lower() or enumItem.Name:lower():find(fontVal:lower()) then
                 return enumItem
             end
         end
@@ -202,6 +233,8 @@ function EZUI.new(config)
     self.FooterText = config.FooterText or "EZUI Library | discord.gg/ezui"
     self.ToggleKey = config.ToggleKey or Enum.KeyCode.RightShift
     self.Font = parseFont(config.Font or Enum.Font.GothamMedium)
+    self.NotifyPosition = config.NotifyPosition or "TopRight"
+    self.NotifyDuration = tonumber(config.NotifyDuration) or 4
     
     -- Theme Setup
     if type(config.Theme) == "string" and PRESET_THEMES[config.Theme] then
@@ -358,6 +391,10 @@ function EZUI:SetNotifyPosition(posName)
     self.NotifyPosition = posName or "TopRight"
 end
 
+function EZUI:SetNotifyDuration(seconds)
+    self.NotifyDuration = tonumber(seconds) or 4
+end
+
 function EZUI:Notify(data)
     if type(data) == "string" then
         data = { Text = data, Type = "Info" }
@@ -367,7 +404,7 @@ function EZUI:Notify(data)
     local state = data.Type or data.State or "Info"
     local titleText = data.Title or data.Header or state
     local bodyText = data.Text or data.Content or data.Message or ""
-    local duration = tonumber(data.Duration or data.Time) or 4
+    local duration = tonumber(data.Duration or data.Time or self.NotifyDuration) or 4
     local posName = data.Position or self.NotifyPosition or "TopRight"
     local font = self.Font or Enum.Font.GothamMedium
 
@@ -514,10 +551,33 @@ function EZUI:LoadConfig()
     end
 end
 
+function EZUI:_applyFont()
+    local font = self.Font or Enum.Font.GothamMedium
+    if self.EzLogoText then self.EzLogoText.Font = font end
+    if self.TitleText then self.TitleText.Font = font end
+    if self.ScreenTitleText then self.ScreenTitleText.Font = font end
+    if self.FooterLeft then self.FooterLeft.Font = font end
+    if self.FooterCounter then self.FooterCounter.Font = font end
+    if self.SideTitle then self.SideTitle.Font = font end
+    if self.PreviewText then self.PreviewText.Font = font end
+
+    for _, c in ipairs(self.TabBar:GetChildren()) do
+        if c:IsA("TextButton") then
+            c.Font = font
+        end
+    end
+
+    for _, inst in pairs(self.RowInstances) do
+        if inst.Label then inst.Label.Font = font end
+        if inst.SelectorLabel then inst.SelectorLabel.Font = font end
+        if inst.SepText then inst.SepText.Font = font end
+    end
+end
+
 function EZUI:SetFont(fontVal, skipSave)
     self.FontName = typeof(fontVal) == "EnumItem" and fontVal.Name or tostring(fontVal)
     self.Font = parseFont(fontVal)
-    self:_applyTheme()
+    self:_applyFont()
     if not skipSave then self:SaveConfig() end
 end
 
@@ -613,6 +673,7 @@ function EZUI:SetOpacity(val, skipSave)
     if self.Banner then self.Banner.BackgroundTransparency = transSolid end
     if self.BannerFiller then self.BannerFiller.BackgroundTransparency = transSolid end
     if self.BannerImage then self.BannerImage.ImageTransparency = transSolid end
+    if self.SubHeader then self.SubHeader.BackgroundTransparency = transSolid end
     if self.TabBar then self.TabBar.BackgroundTransparency = transSolid end
     if self.HighlightBox then self.HighlightBox.BackgroundTransparency = transBg end
     if self.FooterBar then self.FooterBar.BackgroundTransparency = transSolid end
@@ -624,6 +685,7 @@ function EZUI:SetOpacity(val, skipSave)
     if self.EzLogoText then self.EzLogoText.TextTransparency = transSolid end
     if self.EzLogoImage then self.EzLogoImage.ImageTransparency = transSolid end
     if self.TitleText then self.TitleText.TextTransparency = transSolid end
+    if self.ScreenTitleText then self.ScreenTitleText.TextTransparency = transSolid end
     if self.SideTitle then self.SideTitle.TextTransparency = transSolid end
     if self.PreviewText then self.PreviewText.TextTransparency = transSolid end
     if self.FooterLeft then self.FooterLeft.TextTransparency = transSolid end
@@ -659,11 +721,13 @@ function EZUI:_applyTheme()
     self.Window.BackgroundColor3 = theme.WindowBg
     self.Banner.BackgroundColor3 = theme.HeaderBg
     self.BannerFiller.BackgroundColor3 = theme.HeaderBg
+    self.SubHeader.BackgroundColor3 = theme.SubHeaderBg or Color3.fromRGB(10, 10, 10)
     self.EzLogoText.TextColor3 = theme.AccentColor
     self.EzLogoText.Font = self.Font
     self.EzLogoImage.ImageColor3 = Color3.new(1, 1, 1)
     self.TitleText.TextColor3 = theme.AccentColor
     self.TitleText.Font = self.Font
+    self.ScreenTitleText.Font = self.Font
     self.TabBar.BackgroundColor3 = theme.TabBarBg
     self.HighlightBox.BackgroundColor3 = theme.HighlightBg
     self.FooterBar.BackgroundColor3 = theme.HeaderBg
@@ -676,6 +740,7 @@ function EZUI:_applyTheme()
     self.SideTopAccent.BackgroundColor3 = theme.AccentColor
     if self.SideTitle then self.SideTitle.Font = self.Font end
     if self.PreviewText then self.PreviewText.Font = self.Font end
+    if self.ScrollIndicatorThumb then self.ScrollIndicatorThumb.BackgroundColor3 = theme.AccentColor end
     
     self:_buildHeaders()
     self:_buildTabContent()
@@ -693,8 +758,8 @@ function EZUI:_buildGui()
 
     -- Fixed Position to Left Side (No Dragging)
     local window = Instance.new("Frame")
-    window.Size = UDim2.fromOffset(320, 388)
-    window.Position = UDim2.new(0, 25, 0.5, -194)
+    window.Size = UDim2.fromOffset(320, 412)
+    window.Position = UDim2.new(0, 25, 0.5, -206)
     window.BackgroundColor3 = self.Theme.WindowBg
     window.BackgroundTransparency = 0.15 
     window.BorderSizePixel = 0
@@ -785,10 +850,30 @@ function EZUI:_buildGui()
     titleText.Parent = banner
     self.TitleText = titleText
 
+    -- Sub-Header Screen Title Bar (Reference Design Element)
+    local subHeader = Instance.new("Frame")
+    subHeader.Size = UDim2.new(1, 0, 0, 24)
+    subHeader.Position = UDim2.new(0, 0, 0, 80)
+    subHeader.BackgroundColor3 = self.Theme.SubHeaderBg or Color3.fromRGB(10, 10, 10)
+    subHeader.BorderSizePixel = 0
+    subHeader.Parent = window
+    self.SubHeader = subHeader
+
+    local screenTitleText = Instance.new("TextLabel")
+    screenTitleText.Size = UDim2.fromScale(1, 1)
+    screenTitleText.BackgroundTransparency = 1
+    screenTitleText.Text = "Main"
+    screenTitleText.Font = self.Font
+    screenTitleText.TextSize = 12
+    screenTitleText.TextColor3 = self.Theme.TextWhite
+    screenTitleText.TextXAlignment = Enum.TextXAlignment.Center
+    screenTitleText.Parent = subHeader
+    self.ScreenTitleText = screenTitleText
+
     -- Tab Bar
     local tabBar = Instance.new("Frame")
     tabBar.Size = UDim2.new(1, 0, 0, 30)
-    tabBar.Position = UDim2.new(0, 0, 0, 80)
+    tabBar.Position = UDim2.new(0, 0, 0, 104)
     tabBar.BackgroundColor3 = self.Theme.TabBarBg
     tabBar.BorderSizePixel = 0
     tabBar.Parent = window
@@ -804,19 +889,55 @@ function EZUI:_buildGui()
     local activeLine = Instance.new("Frame")
     activeLine.AnchorPoint = Vector2.new(0, 1)
     activeLine.Position = UDim2.new(0, 0, 1, 0)
-    activeLine.BackgroundColor3 = self.Theme.TextWhite
+    activeLine.BackgroundColor3 = self.Theme.AccentColor
     activeLine.BorderSizePixel = 0
     activeLine.Parent = tabBar
     self.ActiveLine = activeLine
 
-    -- Body Area
+    -- Body Area Container
     local bodyContainer = Instance.new("Frame")
     bodyContainer.Size = UDim2.new(1, 0, 0, MAX_VISIBLE * ROW_HEIGHT)
-    bodyContainer.Position = UDim2.new(0, 0, 0, 110)
+    bodyContainer.Position = UDim2.new(0, 0, 0, 134)
     bodyContainer.BackgroundTransparency = 1
     bodyContainer.BorderSizePixel = 0
     bodyContainer.ClipsDescendants = true
     bodyContainer.Parent = window
+
+    -- Left Scroll Indicator Bar (Reference Design Element)
+    local scrollIndicatorTrack = Instance.new("Frame")
+    scrollIndicatorTrack.Size = UDim2.new(0, 3, 1, -16)
+    scrollIndicatorTrack.Position = UDim2.new(0, 4, 0, 8)
+    scrollIndicatorTrack.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    scrollIndicatorTrack.BorderSizePixel = 0
+    scrollIndicatorTrack.Parent = bodyContainer
+
+    local upArrow = Instance.new("TextLabel")
+    upArrow.Size = UDim2.fromOffset(8, 8)
+    upArrow.Position = UDim2.new(0, 2, 0, 0)
+    upArrow.BackgroundTransparency = 1
+    upArrow.Text = "▲"
+    upArrow.Font = Enum.Font.GothamBold
+    upArrow.TextSize = 8
+    upArrow.TextColor3 = self.Theme.TextGray
+    upArrow.Parent = bodyContainer
+
+    local downArrow = Instance.new("TextLabel")
+    downArrow.Size = UDim2.fromOffset(8, 8)
+    downArrow.Position = UDim2.new(0, 2, 1, -8)
+    downArrow.BackgroundTransparency = 1
+    downArrow.Text = "▼"
+    downArrow.Font = Enum.Font.GothamBold
+    downArrow.TextSize = 8
+    downArrow.TextColor3 = self.Theme.TextGray
+    downArrow.Parent = bodyContainer
+
+    local scrollIndicatorThumb = Instance.new("Frame")
+    scrollIndicatorThumb.Size = UDim2.new(1, 0, 0.4, 0)
+    scrollIndicatorThumb.Position = UDim2.new(0, 0, 0, 0)
+    scrollIndicatorThumb.BackgroundColor3 = self.Theme.AccentColor
+    scrollIndicatorThumb.BorderSizePixel = 0
+    scrollIndicatorThumb.Parent = scrollIndicatorTrack
+    self.ScrollIndicatorThumb = scrollIndicatorThumb
 
     local innerScroll = Instance.new("Frame")
     innerScroll.Size = UDim2.fromScale(1, 1)
@@ -1120,6 +1241,16 @@ function EZUI:_updateHighlightAndScroll()
     
     self.FooterCounter.Text = tostring(self.SelectedIndex).." / "..tostring(#items)
 
+    -- Update Left Vertical Scroll Indicator Thumb Position & Size
+    if self.ScrollIndicatorThumb then
+        local scrollPct = (#items > MAX_VISIBLE) and (self.ScrollOffset / (#items - MAX_VISIBLE)) or 0
+        local thumbHeight = (#items > 0) and math.clamp(MAX_VISIBLE / #items, 0.2, 1.0) or 1.0
+        tween(self.ScrollIndicatorThumb, 0.2, {
+            Size = UDim2.new(1, 0, thumbHeight, 0),
+            Position = UDim2.new(0, 0, (1 - thumbHeight) * scrollPct, 0)
+        })
+    end
+
     for i, inst in pairs(self.RowInstances) do
         local isSel = (i == self.SelectedIndex)
         if inst.Label then
@@ -1198,6 +1329,7 @@ function EZUI:_buildTabContent()
                 txt.TextSize = 10
                 txt.TextColor3 = Color3.fromRGB(120, 120, 120)
                 txt.Parent = sepFrame
+                self.RowInstances[i].SepText = txt
 
                 local lineRight = Instance.new("Frame")
                 lineRight.Size = UDim2.new(0.2, 0, 0, 1)
@@ -1336,7 +1468,7 @@ end
 
 function EZUI:_buildHeaders()
     for _, c in ipairs(self.TabBar:GetChildren()) do 
-        if c:IsA("TextButton") then c:Destroy() end 
+        if c:IsA("TextButton") or c.Name == "TabBg" then c:Destroy() end 
     end
     
     local s = self:GetScreen()
@@ -1344,19 +1476,38 @@ function EZUI:_buildHeaders()
     local n = #s.tabs
     if n == 0 then return end
 
+    if self.ScreenTitleText then
+        self.ScreenTitleText.Text = tab and tab.name or (s.parent and s.parent:sub(1,1):upper()..s.parent:sub(2).." Options" or "Main")
+    end
+
     self.ActiveLine.Size = UDim2.new(1/n, 0, 0, 2)
     tween(self.ActiveLine, 0.25, {Position = UDim2.new((self.CurrentTabIndex-1)/n, 0, 1, 0)})
 
     for idx, tab in ipairs(s.tabs) do
+        local isSelected = (idx == self.CurrentTabIndex)
+
+        local tabBg = Instance.new("Frame")
+        tabBg.Name = "TabBg"
+        tabBg.Size = UDim2.new(1/n, -2, 1, -2)
+        tabBg.Position = UDim2.new((idx-1)/n, 1, 0, 1)
+        tabBg.BackgroundColor3 = isSelected and self.Theme.HighlightBg or self.Theme.TabBarBg
+        tabBg.BackgroundTransparency = isSelected and 0 or 1
+        tabBg.BorderSizePixel = 0
+        tabBg.Parent = self.TabBar
+
+        local tabCorner = Instance.new("UICorner")
+        tabCorner.CornerRadius = UDim.new(0, 4)
+        tabCorner.Parent = tabBg
+
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1/n, 0, 1, 0)
-        btn.Position = UDim2.new((idx-1)/n, 0, 0, 0)
+        btn.Size = UDim2.fromScale(1, 1)
+        btn.Position = UDim2.fromScale(0, 0)
         btn.BackgroundTransparency = 1
         btn.Text = tab.name
         btn.Font = self.Font
         btn.TextSize = 11
-        btn.TextColor3 = (idx == self.CurrentTabIndex) and self.Theme.TextWhite or self.Theme.TextGray
-        btn.Parent = self.TabBar
+        btn.TextColor3 = isSelected and self.Theme.TextWhite or self.Theme.TextGray
+        btn.Parent = tabBg
 
         if tab.icon and tab.icon ~= "" then
             local tabIcon = Instance.new("ImageLabel")
