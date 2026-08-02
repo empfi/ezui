@@ -19,6 +19,7 @@ local Players              = game:GetService("Players")
 local UserInputService     = game:GetService("UserInputService")
 local ContextActionService = game:GetService("ContextActionService")
 local TweenService         = game:GetService("TweenService")
+local HttpService          = game:GetService("HttpService")
 local CoreGui              = game:GetService("CoreGui")
 local LocalPlayer          = Players.LocalPlayer
 
@@ -296,18 +297,239 @@ function EZUI:Destroy()
     self:Uninject()
 end
 
-function EZUI:SetFont(fontVal)
-    self.Font = parseFont(fontVal)
-    self:_applyTheme()
+local NOTIFY_CONTAINERS = {}
+
+local function getNotifyContainer(posName)
+    posName = posName or "TopRight"
+    if NOTIFY_CONTAINERS[posName] and NOTIFY_CONTAINERS[posName].Parent then
+        return NOTIFY_CONTAINERS[posName]
+    end
+
+    local gui = CoreGui:FindFirstChild("EZUI_Notifications")
+    if not gui then
+        gui = Instance.new("ScreenGui")
+        gui.Name = "EZUI_Notifications"
+        gui.ResetOnSpawn = false
+        gui.IgnoreGuiInset = true
+        gui.DisplayOrder = 1000
+        pcall(function() gui.Parent = CoreGui end)
+        if not gui.Parent then gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+    end
+
+    local container = Instance.new("Frame")
+    container.Name = posName .. "Container"
+    container.Size = UDim2.fromOffset(260, 500)
+    container.BackgroundTransparency = 1
+    container.BorderSizePixel = 0
+    container.Parent = gui
+
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 8)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = container
+
+    if posName == "TopRight" then
+        container.AnchorPoint = Vector2.new(1, 0)
+        container.Position = UDim2.new(1, -20, 0, 20)
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+        layout.VerticalAlignment = Enum.VerticalAlignment.Top
+    elseif posName == "TopLeft" then
+        container.AnchorPoint = Vector2.new(0, 0)
+        container.Position = UDim2.new(0, 20, 0, 20)
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+        layout.VerticalAlignment = Enum.VerticalAlignment.Top
+    elseif posName == "BottomRight" then
+        container.AnchorPoint = Vector2.new(1, 1)
+        container.Position = UDim2.new(1, -20, 1, -20)
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+        layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+    elseif posName == "BottomLeft" then
+        container.AnchorPoint = Vector2.new(0, 1)
+        container.Position = UDim2.new(0, 20, 1, -20)
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+        layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+    end
+
+    NOTIFY_CONTAINERS[posName] = container
+    return container
 end
 
-function EZUI:SetTheme(themePresetOrTable)
+function EZUI:SetNotifyPosition(posName)
+    self.NotifyPosition = posName or "TopRight"
+end
+
+function EZUI:Notify(data)
+    if type(data) == "string" then
+        data = { Text = data, Type = "Info" }
+    end
+    data = data or {}
+
+    local state = data.Type or data.State or "Info"
+    local titleText = data.Title or data.Header or state
+    local bodyText = data.Text or data.Content or data.Message or ""
+    local duration = tonumber(data.Duration or data.Time) or 4
+    local posName = data.Position or self.NotifyPosition or "TopRight"
+    local font = self.Font or Enum.Font.GothamMedium
+
+    local stateColors = {
+        Info    = Color3.fromRGB(59, 130, 246),
+        Warning = Color3.fromRGB(245, 158, 11),
+        Error   = Color3.fromRGB(239, 68, 68)
+    }
+
+    stateColors.info = stateColors.Info
+    stateColors.warning = stateColors.Warning
+    stateColors.error = stateColors.Error
+
+    local accentColor = stateColors[state] or stateColors.Info
+
+    local defaultIcons = {
+        Info    = BUILTIN_ICONS.Info,
+        Warning = BUILTIN_ICONS.Star,
+        Error   = BUILTIN_ICONS.Cross
+    }
+    defaultIcons.info = defaultIcons.Info
+    defaultIcons.warning = defaultIcons.Warning
+    defaultIcons.error = defaultIcons.Error
+
+    local iconId = data.Icon or defaultIcons[state] or BUILTIN_ICONS.Info
+
+    local container = getNotifyContainer(posName)
+
+    local card = Instance.new("Frame")
+    card.Size = UDim2.fromOffset(250, 52)
+    card.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    card.BackgroundTransparency = 1
+    card.BorderSizePixel = 0
+    card.ClipsDescendants = true
+    card.Parent = container
+
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 6)
+    cardCorner.Parent = card
+
+    local leftBar = Instance.new("Frame")
+    leftBar.Size = UDim2.new(0, 3, 1, 0)
+    leftBar.Position = UDim2.fromOffset(0, 0)
+    leftBar.BackgroundColor3 = accentColor
+    leftBar.BorderSizePixel = 0
+    leftBar.BackgroundTransparency = 1
+    leftBar.Parent = card
+
+    local iconImg = Instance.new("ImageLabel")
+    iconImg.Size = UDim2.fromOffset(16, 16)
+    iconImg.Position = UDim2.fromOffset(12, 18)
+    iconImg.BackgroundTransparency = 1
+    iconImg.Image = formatAssetId(iconId)
+    iconImg.ImageTransparency = 1
+    iconImg.ScaleType = Enum.ScaleType.Fit
+    iconImg.Parent = card
+
+    local headerLabel = Instance.new("TextLabel")
+    headerLabel.Size = UDim2.new(1, -40, 0, 18)
+    headerLabel.Position = UDim2.fromOffset(36, 8)
+    headerLabel.BackgroundTransparency = 1
+    headerLabel.Text = titleText
+    headerLabel.Font = font
+    headerLabel.TextSize = 11
+    headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    headerLabel.TextTransparency = 1
+    headerLabel.TextXAlignment = Enum.TextXAlignment.Left
+    headerLabel.Parent = card
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, -40, 0, 20)
+    textLabel.Position = UDim2.fromOffset(36, 26)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = bodyText
+    textLabel.Font = font
+    textLabel.TextSize = 10
+    textLabel.TextColor3 = Color3.fromRGB(160, 160, 160)
+    textLabel.TextTransparency = 1
+    textLabel.TextWrapped = true
+    textLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textLabel.TextYAlignment = Enum.TextYAlignment.Top
+    textLabel.Parent = card
+
+    -- Tween Slide-In & Fade-In
+    tween(card, 0.3, {BackgroundTransparency = 0.15})
+    tween(leftBar, 0.3, {BackgroundTransparency = 0})
+    tween(iconImg, 0.3, {ImageTransparency = 0})
+    tween(headerLabel, 0.3, {TextTransparency = 0})
+    tween(textLabel, 0.3, {TextTransparency = 0})
+
+    -- Auto-dismiss
+    task.delay(duration, function()
+        if card and card.Parent then
+            local t = tween(card, 0.3, {BackgroundTransparency = 1})
+            tween(leftBar, 0.3, {BackgroundTransparency = 1})
+            tween(iconImg, 0.3, {ImageTransparency = 1})
+            tween(headerLabel, 0.3, {TextTransparency = 1})
+            tween(textLabel, 0.3, {TextTransparency = 1})
+            t.Completed:Connect(function()
+                card:Destroy()
+            end)
+        end
+    end)
+
+    return card
+end
+
+function EZUI:SaveConfig()
+    if writefile then
+        pcall(function()
+            local cfg = {
+                Banner = self.CurrentBannerId or "",
+                Theme = self.CurrentThemeName or "Green",
+                Opacity = self.OpacityValue or 85,
+                Font = self.FontName or "GothamMedium"
+            }
+            writefile("EZUI_Config.json", HttpService:JSONEncode(cfg))
+        end)
+    end
+end
+
+function EZUI:LoadConfig()
+    if readfile and isfile and isfile("EZUI_Config.json") then
+        pcall(function()
+            local content = readfile("EZUI_Config.json")
+            if content and #content > 0 then
+                local cfg = HttpService:JSONDecode(content)
+                if cfg then
+                    if cfg.Banner and cfg.Banner ~= "" then 
+                        self:SetBanner(cfg.Banner, true) 
+                    end
+                    if cfg.Theme then 
+                        self:SetTheme(cfg.Theme, true) 
+                    end
+                    if cfg.Opacity then 
+                        self:SetOpacity(cfg.Opacity, true) 
+                    end
+                    if cfg.Font then 
+                        self:SetFont(cfg.Font, true) 
+                    end
+                end
+            end
+        end)
+    end
+end
+
+function EZUI:SetFont(fontVal, skipSave)
+    self.FontName = typeof(fontVal) == "EnumItem" and fontVal.Name or tostring(fontVal)
+    self.Font = parseFont(fontVal)
+    self:_applyTheme()
+    if not skipSave then self:SaveConfig() end
+end
+
+function EZUI:SetTheme(themePresetOrTable, skipSave)
     if type(themePresetOrTable) == "string" and PRESET_THEMES[themePresetOrTable] then
         self.Theme = table.clone(PRESET_THEMES[themePresetOrTable])
+        self.CurrentThemeName = themePresetOrTable
     elseif type(themePresetOrTable) == "table" then
         self.Theme = table.clone(themePresetOrTable)
     end
     self:_applyTheme()
+    if not skipSave then self:SaveConfig() end
 end
 
 function EZUI:SetAccentColor(color3)
@@ -370,13 +592,18 @@ function EZUI:SetWatermarkVisible(visible)
     end
 end
 
-function EZUI:SetBanner(bannerUrlOrAssetId)
+function EZUI:SetBanner(bannerUrlOrAssetId, skipSave)
     if not self.BannerImage then return end
-    self.BannerImage.Image = formatAssetId(bannerUrlOrAssetId)
+    local id = formatAssetId(bannerUrlOrAssetId)
+    self.BannerImage.Image = id
+    self.CurrentBannerId = id
+    if not skipSave then self:SaveConfig() end
 end
 
-function EZUI:SetOpacity(val)
-    local pct = math.clamp(tonumber(val) or 85, 0, 100) / 100
+function EZUI:SetOpacity(val, skipSave)
+    local pctNum = tonumber(val) or 85
+    self.OpacityValue = pctNum
+    local pct = math.clamp(pctNum, 0, 100) / 100
     self.OpacityFraction = pct
     
     local transBg = 1 - (0.85 * pct)
@@ -407,6 +634,8 @@ function EZUI:SetOpacity(val)
             inst.IconImage.ImageTransparency = transSolid
         end
     end
+
+    if not skipSave then self:SaveConfig() end
 end
 
 function EZUI:SetSidePreview(item, previewConfig)
@@ -1199,6 +1428,7 @@ function EZUI:Init()
             end
         end
     end
+    self:LoadConfig()
     self:_buildHeaders()
     self:_buildTabContent()
     self:_bindKeys()
