@@ -1471,6 +1471,28 @@ function EZUI:_buildTabContent()
     self:_updateHighlightAndScroll()
 end
 
+function EZUI:SwitchTab(index)
+    local s = self:GetScreen()
+    if not s or not s.tabs[index] then return end
+    
+    self.CurrentTabIndex = index
+    self.SelectedIndex = 1
+    self.ScrollOffset = 0
+    
+    self:_buildHeaders()
+
+    if self.InnerScroll then
+        local currentY = -self.ScrollOffset * ROW_HEIGHT
+        tween(self.InnerScroll, 0.08, {Position = UDim2.new(0, -12, 0, currentY)})
+        task.wait(0.08)
+        self:_buildTabContent()
+        self.InnerScroll.Position = UDim2.new(0, 12, 0, 0)
+        tween(self.InnerScroll, 0.18, {Position = UDim2.new(0, 0, 0, 0)})
+    else
+        self:_buildTabContent()
+    end
+end
+
 function EZUI:_buildHeaders()
     for _, c in ipairs(self.TabBar:GetChildren()) do 
         if c:IsA("TextButton") or c.Name == "TabBg" then c:Destroy() end 
@@ -1518,6 +1540,10 @@ function EZUI:_buildHeaders()
         btn.TextSize = 11
         btn.TextColor3 = isSelected and self.Theme.TextWhite or self.Theme.TextGray
         btn.Parent = tabBg
+
+        btn.MouseButton1Click:Connect(function()
+            self:SwitchTab(idx)
+        end)
 
         if tab.icon and tab.icon ~= "" then
             local tabIcon = Instance.new("ImageLabel")
@@ -1755,11 +1781,10 @@ function EZUI:_setupInputs()
             end)
             local s = self:GetScreen()
             if s and #s.tabs > 0 then
-                self.CurrentTabIndex = (self.CurrentTabIndex % #s.tabs) + 1
-                self.SelectedIndex = 1
-                self.ScrollOffset = 0
-                self:_buildHeaders()
-                self:_buildTabContent()
+                local nextTab = (self.CurrentTabIndex % #s.tabs) + 1
+                task.spawn(function()
+                    self:SwitchTab(nextTab)
+                end)
             end
         elseif input.KeyCode == Enum.KeyCode.Backspace or input.KeyCode == Enum.KeyCode.Delete then
             local s = self:GetScreen()
