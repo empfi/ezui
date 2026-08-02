@@ -123,12 +123,12 @@ local function tween(obj, time, props)
 end
 
 local FONT_MAP = {
-    Gotham         = Enum.Font.GothamMedium,
+    Gotham         = Enum.Font.Gotham,
     GothamMedium   = Enum.Font.GothamMedium,
     GothamBold     = Enum.Font.GothamBold,
-    Roboto         = Enum.Font.RobotoMedium,
-    RobotoMedium   = Enum.Font.RobotoMedium,
-    SourceSans     = Enum.Font.SourceSansMedium,
+    Roboto         = Enum.Font.Roboto,
+    RobotoMedium   = Enum.Font.Roboto,
+    SourceSans     = Enum.Font.SourceSans,
     SourceSansBold = Enum.Font.SourceSansBold,
     FredokaOne     = Enum.Font.FredokaOne,
     Arcade         = Enum.Font.Arcade,
@@ -138,7 +138,7 @@ local FONT_MAP = {
     Nunito         = Enum.Font.Nunito,
     Sarpanch       = Enum.Font.Sarpanch,
     Ubuntu         = Enum.Font.Ubuntu,
-    BuilderSans    = Enum.Font.BuilderSansMedium,
+    BuilderSans    = Enum.Font.BuilderSans,
     Code           = Enum.Font.Code
 }
 
@@ -148,14 +148,22 @@ local function parseFont(fontVal)
     elseif type(fontVal) == "string" then
         if FONT_MAP[fontVal] then
             return FONT_MAP[fontVal]
-        elseif Enum.Font[fontVal] then
+        end
+        local success, result = pcall(function()
             return Enum.Font[fontVal]
+        end)
+        if success and result then
+            return result
         end
-        for _, enumItem in ipairs(Enum.Font:GetEnumItems()) do
-            if enumItem.Name:lower() == fontVal:lower() or enumItem.Name:lower():find(fontVal:lower()) then
-                return enumItem
+        pcall(function()
+            for _, enumItem in ipairs(Enum.Font:GetEnumItems()) do
+                if enumItem.Name:lower() == fontVal:lower() or enumItem.Name:lower():find(fontVal:lower()) then
+                    result = enumItem
+                    break
+                end
             end
-        end
+        end)
+        if result then return result end
     end
     return Enum.Font.GothamMedium
 end
