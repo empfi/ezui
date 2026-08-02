@@ -642,6 +642,13 @@ function EZUI:SetTitle(titleText)
     end
 end
 
+function EZUI:SetFooterText(text)
+    self.FooterText = text or ""
+    if self.FooterLeft then
+        self.FooterLeft.Text = self.FooterText
+    end
+end
+
 function EZUI:SetSubHeaderTitle(titleText)
     if self.ScreenTitleText then
         self.ScreenTitleText.Text = titleText or ""
