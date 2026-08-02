@@ -817,8 +817,8 @@ function EZUI:_buildGui()
 
     -- Fixed Position to Left Side (No Dragging)
     local window = Instance.new("Frame")
-    window.Size = UDim2.fromOffset(320, 412)
-    window.Position = UDim2.new(0, 25, 0.5, -206)
+    window.Size = UDim2.fromOffset(320, 388)
+    window.Position = UDim2.new(0, 25, 0.5, -194)
     window.BackgroundColor3 = self.Theme.WindowBg
     window.BackgroundTransparency = 0.15 
     window.BorderSizePixel = 0
@@ -909,30 +909,10 @@ function EZUI:_buildGui()
     titleText.Parent = banner
     self.TitleText = titleText
 
-    -- Sub-Header Screen Title Bar
-    local subHeader = Instance.new("Frame")
-    subHeader.Size = UDim2.new(1, 0, 0, 24)
-    subHeader.Position = UDim2.new(0, 0, 0, 80)
-    subHeader.BackgroundColor3 = self.Theme.SubHeaderBg or Color3.fromRGB(10, 10, 10)
-    subHeader.BorderSizePixel = 0
-    subHeader.Parent = window
-    self.SubHeader = subHeader
-
-    local screenTitleText = Instance.new("TextLabel")
-    screenTitleText.Size = UDim2.fromScale(1, 1)
-    screenTitleText.BackgroundTransparency = 1
-    screenTitleText.Text = "Main"
-    screenTitleText.Font = self.Font
-    screenTitleText.TextSize = 12
-    screenTitleText.TextColor3 = self.Theme.TextWhite
-    screenTitleText.TextXAlignment = Enum.TextXAlignment.Center
-    screenTitleText.Parent = subHeader
-    self.ScreenTitleText = screenTitleText
-
     -- Tab Bar
     local tabBar = Instance.new("Frame")
     tabBar.Size = UDim2.new(1, 0, 0, 30)
-    tabBar.Position = UDim2.new(0, 0, 0, 104)
+    tabBar.Position = UDim2.new(0, 0, 0, 80)
     tabBar.BackgroundColor3 = self.Theme.TabBarBg
     tabBar.BorderSizePixel = 0
     tabBar.Parent = window
@@ -945,10 +925,18 @@ function EZUI:_buildGui()
     tabBorder.BorderSizePixel = 0
     tabBorder.Parent = tabBar
 
+    local activeLine = Instance.new("Frame")
+    activeLine.AnchorPoint = Vector2.new(0, 1)
+    activeLine.Position = UDim2.new(0, 0, 1, 0)
+    activeLine.BackgroundColor3 = self.Theme.AccentColor
+    activeLine.BorderSizePixel = 0
+    activeLine.Parent = tabBar
+    self.ActiveLine = activeLine
+
     -- Body Area Container
     local bodyContainer = Instance.new("Frame")
     bodyContainer.Size = UDim2.new(1, 0, 0, MAX_VISIBLE * ROW_HEIGHT)
-    bodyContainer.Position = UDim2.new(0, 0, 0, 134)
+    bodyContainer.Position = UDim2.new(0, 0, 0, 110)
     bodyContainer.BackgroundTransparency = 1
     bodyContainer.BorderSizePixel = 0
     bodyContainer.ClipsDescendants = true
@@ -1503,43 +1491,23 @@ function EZUI:_buildHeaders()
     local n = #s.tabs
     if n == 0 then return end
 
-    local currentTab = s.tabs[self.CurrentTabIndex]
-
-    if self.ScreenTitleText then
-        if s.title then
-            self.ScreenTitleText.Text = s.title
-        elseif s.parent then
-            self.ScreenTitleText.Text = s.parent:sub(1,1):upper() .. s.parent:sub(2) .. " Options"
-        else
-            self.ScreenTitleText.Text = currentTab and currentTab.name or "Main"
-        end
+    if self.ActiveLine then
+        self.ActiveLine.Size = UDim2.new(1/n, 0, 0, 2)
+        tween(self.ActiveLine, 0.25, {Position = UDim2.new((self.CurrentTabIndex-1)/n, 0, 1, 0)})
     end
 
     for idx, tab in ipairs(s.tabs) do
         local isSelected = (idx == self.CurrentTabIndex)
 
-        local tabBg = Instance.new("Frame")
-        tabBg.Name = "TabBg"
-        tabBg.Size = UDim2.new(1/n, -2, 1, -2)
-        tabBg.Position = UDim2.new((idx-1)/n, 1, 0, 1)
-        tabBg.BackgroundColor3 = isSelected and self.Theme.HighlightBg or self.Theme.TabBarBg
-        tabBg.BackgroundTransparency = isSelected and 0 or 1
-        tabBg.BorderSizePixel = 0
-        tabBg.Parent = self.TabBar
-
-        local tabCorner = Instance.new("UICorner")
-        tabCorner.CornerRadius = UDim.new(0, 4)
-        tabCorner.Parent = tabBg
-
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.fromScale(1, 1)
-        btn.Position = UDim2.fromScale(0, 0)
+        btn.Size = UDim2.new(1/n, 0, 1, 0)
+        btn.Position = UDim2.new((idx-1)/n, 0, 0, 0)
         btn.BackgroundTransparency = 1
         btn.Text = tab.name
         btn.Font = self.Font
         btn.TextSize = 11
         btn.TextColor3 = isSelected and self.Theme.TextWhite or self.Theme.TextGray
-        btn.Parent = tabBg
+        btn.Parent = self.TabBar
 
         btn.MouseButton1Click:Connect(function()
             self:SwitchTab(idx)
