@@ -122,50 +122,68 @@ local function tween(obj, time, props)
     return t
 end
 
-local FONT_MAP = {
-    Gotham         = Enum.Font.Gotham,
-    GothamMedium   = Enum.Font.GothamMedium,
-    GothamBold     = Enum.Font.GothamBold,
-    Roboto         = Enum.Font.Roboto,
-    RobotoMedium   = Enum.Font.Roboto,
-    SourceSans     = Enum.Font.SourceSans,
-    SourceSansBold = Enum.Font.SourceSansBold,
-    FredokaOne     = Enum.Font.FredokaOne,
-    Arcade         = Enum.Font.Arcade,
-    Bodoni         = Enum.Font.Bodoni,
-    Fantasy        = Enum.Font.Fantasy,
-    Jura           = Enum.Font.Jura,
-    Nunito         = Enum.Font.Nunito,
-    Sarpanch       = Enum.Font.Sarpanch,
-    Ubuntu         = Enum.Font.Ubuntu,
-    BuilderSans    = Enum.Font.BuilderSans,
-    Code           = Enum.Font.Code
+local FONT_ALIAS = {
+    gotham         = "Gotham",
+    gothammedium   = "GothamMedium",
+    gothambold     = "GothamBold",
+    roboto         = "Roboto",
+    robotomedium   = "Roboto",
+    sourcesans     = "SourceSans",
+    sourcesansbold = "SourceSansBold",
+    fredokaone     = "FredokaOne",
+    arcade         = "Arcade",
+    bodoni         = "Bodoni",
+    fantasy        = "Fantasy",
+    jura           = "Jura",
+    nunito         = "Nunito",
+    sarpanch       = "Sarpanch",
+    ubuntu         = "Ubuntu",
+    buildersans    = "BuilderSans",
+    code           = "Code"
 }
+
+local function getEnumFontByName(nameStr)
+    if not nameStr then return nil end
+    local ok, result = pcall(function()
+        return Enum.Font[nameStr]
+    end)
+    if ok and result then return result end
+    return nil
+end
 
 local function parseFont(fontVal)
     if typeof(fontVal) == "EnumItem" then
         return fontVal
-    elseif type(fontVal) == "string" then
-        if FONT_MAP[fontVal] then
-            return FONT_MAP[fontVal]
+    end
+    
+    if type(fontVal) == "string" then
+        -- 1. Direct pcall lookup
+        local direct = getEnumFontByName(fontVal)
+        if direct then return direct end
+
+        -- 2. Check alias map
+        local lower = fontVal:lower()
+        if FONT_ALIAS[lower] then
+            local aliasResult = getEnumFontByName(FONT_ALIAS[lower])
+            if aliasResult then return aliasResult end
         end
-        local success, result = pcall(function()
-            return Enum.Font[fontVal]
-        end)
-        if success and result then
-            return result
-        end
+
+        -- 3. Search Enum.Font items safely
+        local found = nil
         pcall(function()
-            for _, enumItem in ipairs(Enum.Font:GetEnumItems()) do
-                if enumItem.Name:lower() == fontVal:lower() or enumItem.Name:lower():find(fontVal:lower()) then
-                    result = enumItem
+            for _, item in ipairs(Enum.Font:GetEnumItems()) do
+                local itemName = item.Name:lower()
+                if itemName == lower or itemName:find(lower) then
+                    found = item
                     break
                 end
             end
         end)
-        if result then return result end
+        if found then return found end
     end
-    return Enum.Font.GothamMedium
+
+    -- Ultimate safe fallback
+    return getEnumFontByName("GothamMedium") or Enum.Font:GetEnumItems()[1]
 end
 
 local BUILTIN_ICONS = {
