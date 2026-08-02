@@ -778,26 +778,34 @@ end
 
 function EZUI:_applyTheme()
     local theme = self.Theme
-    self.Window.BackgroundColor3 = theme.WindowBg
-    self.Banner.BackgroundColor3 = theme.HeaderBg
-    self.BannerFiller.BackgroundColor3 = theme.HeaderBg
-    self.SubHeader.BackgroundColor3 = theme.SubHeaderBg or Color3.fromRGB(10, 10, 10)
-    self.EzLogoText.TextColor3 = theme.AccentColor
-    self.EzLogoText.Font = self.Font
-    self.EzLogoImage.ImageColor3 = Color3.new(1, 1, 1)
-    self.TitleText.TextColor3 = theme.AccentColor
-    self.TitleText.Font = self.Font
-    self.ScreenTitleText.Font = self.Font
-    self.TabBar.BackgroundColor3 = theme.TabBarBg
-    self.HighlightBox.BackgroundColor3 = theme.HighlightBg
-    self.FooterBar.BackgroundColor3 = theme.HeaderBg
-    self.FooterFiller.BackgroundColor3 = theme.HeaderBg
-    self.FooterLeft.TextColor3 = theme.TextGray
-    self.FooterLeft.Font = self.Font
-    self.FooterCounter.TextColor3 = theme.TextGray
-    self.FooterCounter.Font = self.Font
-    self.SidePanel.BackgroundColor3 = theme.WindowBg
-    self.SideTopAccent.BackgroundColor3 = theme.AccentColor
+    if self.Window then self.Window.BackgroundColor3 = theme.WindowBg end
+    if self.Banner then self.Banner.BackgroundColor3 = theme.HeaderBg end
+    if self.BannerFiller then self.BannerFiller.BackgroundColor3 = theme.HeaderBg end
+    if self.SubHeader then self.SubHeader.BackgroundColor3 = theme.SubHeaderBg or Color3.fromRGB(10, 10, 10) end
+    if self.EzLogoText then
+        self.EzLogoText.TextColor3 = theme.AccentColor
+        self.EzLogoText.Font = self.Font
+    end
+    if self.EzLogoImage then self.EzLogoImage.ImageColor3 = Color3.new(1, 1, 1) end
+    if self.TitleText then
+        self.TitleText.TextColor3 = theme.AccentColor
+        self.TitleText.Font = self.Font
+    end
+    if self.ScreenTitleText then self.ScreenTitleText.Font = self.Font end
+    if self.TabBar then self.TabBar.BackgroundColor3 = theme.TabBarBg end
+    if self.HighlightBox then self.HighlightBox.BackgroundColor3 = theme.HighlightBg end
+    if self.FooterBar then self.FooterBar.BackgroundColor3 = theme.HeaderBg end
+    if self.FooterFiller then self.FooterFiller.BackgroundColor3 = theme.HeaderBg end
+    if self.FooterLeft then
+        self.FooterLeft.TextColor3 = theme.TextGray
+        self.FooterLeft.Font = self.Font
+    end
+    if self.FooterCounter then
+        self.FooterCounter.TextColor3 = theme.TextGray
+        self.FooterCounter.Font = self.Font
+    end
+    if self.SidePanel then self.SidePanel.BackgroundColor3 = theme.WindowBg end
+    if self.SideTopAccent then self.SideTopAccent.BackgroundColor3 = theme.AccentColor end
     if self.SideTitle then self.SideTitle.Font = self.Font end
     if self.PreviewText then self.PreviewText.Font = self.Font end
     
