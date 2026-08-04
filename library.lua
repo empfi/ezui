@@ -1,22 +1,4 @@
---[[
-    EZUI — Premium Minimalist Roblox UI Library
-    
-    Features:
-    - Premium Header & Sub-Header Screen Title Bar (as seen in reference UI design)
-    - Left Vertical Scroll Indicator Strip with Up/Down Chevrons (▲ / ▼)
-    - Active Tab Dark Highlight Styling with Smooth Accent Lines
-    - Global Proportional Opacity Control (ui:SetOpacity)
-    - Instant Font Switcher (Enum.Font or string name, ui:SetFont) with expanded font presets
-    - Notification System with custom durations, 4 corners, and Info/Warning/Error states
-    - Icons Everywhere (Tabs, Toggles, Sliders, Selectors, Buttons, Navs, Separators)
-    - Versatile Side Panel Preview Window (Text & Image Preview)
-    - Customizable Header Logo (Image ID or Text) & Script Title
-    - User-Defined Banner Image Support & Live Side-Panel Preview
-    - Hold-to-Repeat Navigation & Slider adjustment
-    - Non-intrusive input sinking (WASD movement & Mouse Look preserved)
-    - Automatic Workspace Config Persistence (EZUI_Config.json)
-    - Full Uninject / Teardown System (ui:Uninject())
-]]
+-- EZUI is a small Roblox UI library for tabs, sliders, toggles, selectors, and notifications.
 
 local Players              = game:GetService("Players")
 local UserInputService     = game:GetService("UserInputService")
@@ -26,9 +8,7 @@ local HttpService          = game:GetService("HttpService")
 local CoreGui              = game:GetService("CoreGui")
 local LocalPlayer          = Players.LocalPlayer
 
-----------------------------------------------------------------
--- DEFAULT THEMES & PRESETS
-----------------------------------------------------------------
+-- Theme presets
 local PRESET_THEMES = {
     Green = {
         WindowBg       = Color3.fromRGB(15, 15, 15),
@@ -113,9 +93,7 @@ local PRESET_THEMES = {
 local ROW_HEIGHT = 28
 local MAX_VISIBLE = 9
 
-----------------------------------------------------------------
--- UTILITIES
-----------------------------------------------------------------
+-- Utility helpers
 local function tween(obj, time, props)
     local t = TweenService:Create(obj, TweenInfo.new(time, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), props)
     t:Play()
@@ -157,18 +135,15 @@ local function parseFont(fontVal)
     end
     
     if type(fontVal) == "string" then
-        -- 1. Direct pcall lookup
         local direct = getEnumFontByName(fontVal)
         if direct then return direct end
 
-        -- 2. Check alias map
         local lower = fontVal:lower()
         if FONT_ALIAS[lower] then
             local aliasResult = getEnumFontByName(FONT_ALIAS[lower])
             if aliasResult then return aliasResult end
         end
 
-        -- 3. Search Enum.Font items safely
         local found = nil
         pcall(function()
             for _, item in ipairs(Enum.Font:GetEnumItems()) do
@@ -182,7 +157,6 @@ local function parseFont(fontVal)
         if found then return found end
     end
 
-    -- Ultimate safe fallback
     return getEnumFontByName("GothamMedium") or Enum.Font:GetEnumItems()[1]
 end
 
@@ -247,7 +221,7 @@ local function cleanupExistingUI()
 end
 
 ----------------------------------------------------------------
--- EZUI LIBRARY CLASS
+-- Main UI class
 ----------------------------------------------------------------
 local EZUI = {}
 EZUI.__index = EZUI
@@ -268,7 +242,6 @@ function EZUI.new(config)
     self.NotifyPosition = config.NotifyPosition or "TopRight"
     self.NotifyDuration = tonumber(config.NotifyDuration) or 4
     
-    -- Theme Setup
     if type(config.Theme) == "string" and PRESET_THEMES[config.Theme] then
         self.Theme = table.clone(PRESET_THEMES[config.Theme])
         self.CurrentThemeName = config.Theme
@@ -331,23 +304,20 @@ function EZUI:Uninject()
     self:_stopKeyHold()
     self:_unbindKeys()
     
-    -- Disconnect input connections
     if self.Connections then
         for _, conn in ipairs(self.Connections) do
             pcall(function() conn:Disconnect() end)
         end
         table.clear(self.Connections)
     end
-    
-    -- Execute developer custom uninject callbacks
+
     if self.OnUninjectCallbacks then
         for _, cb in ipairs(self.OnUninjectCallbacks) do
             pcall(cb)
         end
         table.clear(self.OnUninjectCallbacks)
     end
-    
-    -- Reset Humanoid WalkSpeed and JumpPower back to Roblox defaults
+
     pcall(function()
         local char = LocalPlayer and LocalPlayer.Character
         local hum = char and char:FindFirstChildOfClass("Humanoid")
@@ -357,12 +327,10 @@ function EZUI:Uninject()
         end
     end)
 
-    -- Destroy UI ScreenGui
     if self.Gui then
         pcall(function() self.Gui:Destroy() end)
     end
-    
-    -- Clear global active instance
+
     if getgenv and getgenv().EZUI_ActiveInstance == self then
         getgenv().EZUI_ActiveInstance = nil
     end
@@ -530,14 +498,12 @@ function EZUI:Notify(data)
     textLabel.TextYAlignment = Enum.TextYAlignment.Top
     textLabel.Parent = card
 
-    -- Tween Slide-In & Fade-In
     tween(card, 0.3, {BackgroundTransparency = 0.15})
     tween(leftBar, 0.3, {BackgroundTransparency = 0})
     tween(iconImg, 0.3, {ImageTransparency = 0})
     tween(headerLabel, 0.3, {TextTransparency = 0})
     tween(textLabel, 0.3, {TextTransparency = 0})
 
-    -- Auto-dismiss
     task.delay(duration, function()
         if card and card.Parent then
             local t = tween(card, 0.3, {BackgroundTransparency = 1})
@@ -828,7 +794,6 @@ function EZUI:_buildGui()
     if not gui.Parent then gui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
     self.Gui = gui
 
-    -- Fixed Position to Left Side (No Dragging)
     local window = Instance.new("Frame")
     window.Size = UDim2.fromOffset(320, 388)
     window.Position = UDim2.new(0, 25, 0.5, -194)
@@ -842,7 +807,6 @@ function EZUI:_buildGui()
     windowCorner.CornerRadius = UDim.new(0, 6)
     windowCorner.Parent = window
 
-    -- Banner Header
     local banner = Instance.new("Frame")
     banner.Size = UDim2.new(1, 0, 0, 80)
     banner.BackgroundColor3 = self.Theme.HeaderBg
@@ -877,7 +841,6 @@ function EZUI:_buildGui()
     bannerImgCorner.CornerRadius = UDim.new(0, 6)
     bannerImgCorner.Parent = bannerImage
 
-    -- Left Logo Image (Supports Asset ID / Image URL)
     local ezLogoImg = Instance.new("ImageLabel")
     ezLogoImg.Size = UDim2.fromOffset(40, 40)
     ezLogoImg.Position = UDim2.fromOffset(16, 20)
@@ -892,7 +855,6 @@ function EZUI:_buildGui()
     ezLogoImgCorner.CornerRadius = UDim.new(0, 6)
     ezLogoImgCorner.Parent = ezLogoImg
 
-    -- Left Logo Text
     local ezLogoText = Instance.new("TextLabel")
     ezLogoText.Size = UDim2.fromOffset(60, 46)
     ezLogoText.Position = UDim2.fromOffset(16, 16)
@@ -907,7 +869,6 @@ function EZUI:_buildGui()
     ezLogoText.Parent = banner
     self.EzLogoText = ezLogoText
 
-    -- Right Title Text
     local titleText = Instance.new("TextLabel")
     titleText.Size = UDim2.fromOffset(150, 30)
     titleText.Position = UDim2.new(1, -166, 0, 25)
@@ -922,7 +883,6 @@ function EZUI:_buildGui()
     titleText.Parent = banner
     self.TitleText = titleText
 
-    -- Tab Bar
     local tabBar = Instance.new("Frame")
     tabBar.Size = UDim2.new(1, 0, 0, 30)
     tabBar.Position = UDim2.new(0, 0, 0, 80)
@@ -946,7 +906,6 @@ function EZUI:_buildGui()
     activeLine.Parent = tabBar
     self.ActiveLine = activeLine
 
-    -- Body Area Container
     local bodyContainer = Instance.new("Frame")
     bodyContainer.Size = UDim2.new(1, 0, 0, MAX_VISIBLE * ROW_HEIGHT)
     bodyContainer.Position = UDim2.new(0, 0, 0, 110)
@@ -961,7 +920,6 @@ function EZUI:_buildGui()
     innerScroll.Parent = bodyContainer
     self.InnerScroll = innerScroll
 
-    -- Highlight Selection
     local highlightBox = Instance.new("Frame")
     highlightBox.Size = UDim2.new(1, 0, 0, ROW_HEIGHT)
     highlightBox.Position = UDim2.new(0, 0, 0, 0)
@@ -970,7 +928,6 @@ function EZUI:_buildGui()
     highlightBox.Parent = innerScroll
     self.HighlightBox = highlightBox
 
-    -- Footer Bar
     local footerBar = Instance.new("Frame")
     footerBar.Size = UDim2.new(1, 0, 0, 26)
     footerBar.Position = UDim2.new(0, 0, 1, -26)
@@ -1014,7 +971,6 @@ function EZUI:_buildGui()
     footerCounter.Parent = footerBar
     self.FooterCounter = footerCounter
 
-    -- Side Panel (Live Preview Window)
     local sidePanel = Instance.new("Frame")
     sidePanel.Size = UDim2.fromOffset(180, 110)
     sidePanel.Position = UDim2.new(1, 10, 0, 0)
@@ -1076,9 +1032,7 @@ function EZUI:_buildGui()
     self.PreviewText = previewText
 end
 
-----------------------------------------------------------------
--- SCREEN & ITEM BUILDERS
-----------------------------------------------------------------
+-- Screen and item builders
 function EZUI:CreateScreen(id, data)
     data = data or {}
     self.Screens[id] = {
@@ -1159,9 +1113,7 @@ function EZUI:AddNav(tab, name, targetScreen, icon)
     return item
 end
 
-----------------------------------------------------------------
--- RENDER LOGIC
-----------------------------------------------------------------
+-- Render logic
 function EZUI:GetScreen()
     return self.Screens[self.CurrentScreen]
 end
@@ -1602,9 +1554,7 @@ function EZUI:Init()
     self:_bindKeys()
 end
 
-----------------------------------------------------------------
--- INPUT BLOCKING & HOLD-TO-REPEAT HANDLING
-----------------------------------------------------------------
+-- Input blocking and hold repeat
 local BLOCK_NAME = "EZKeyBlock_Final"
 
 local blockedKeys = {
@@ -1619,7 +1569,7 @@ local blockedKeys = {
     [Enum.KeyCode.Delete] = true,
 }
 
--- Executor IsKeyDown Hook to prevent game scripts from reading navigation keys
+-- Block navigation keys from regular game input
 pcall(function()
     if hookmetamethod then
         local oldNamecall
@@ -1697,7 +1647,6 @@ function EZUI:_stopKeyHold()
 end
 
 function EZUI:_processKeyAction(keyCode)
-    -- Prevent character movement caused by arrow keys when WASD is not held
     if not isWASDDown() then
         local char = LocalPlayer.Character
         local hum = char and char:FindFirstChildOfClass("Humanoid")
