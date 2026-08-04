@@ -191,18 +191,23 @@ local BUILTIN_ICONS = {
     Shield   = "rbxassetid://6031082533",
     Settings = "rbxassetid://6031280882",
     Speed    = "rbxassetid://6031097225",
-    Eye      = "rbxassetid://6031094678",
-    Wrench   = "rbxassetid://6031265976",
+    Eye      = "rbxassetid://6031097229",
+    Wrench   = "rbxassetid://6031094677",
     Home     = "rbxassetid://6031075929",
-    Star     = "rbxassetid://6031094670",
+    Star     = "rbxassetid://6031082534",
     Lock     = "rbxassetid://6031082529",
     Check    = "rbxassetid://6031094667",
-    Cross    = "rbxassetid://6031094668",
+    Cross    = "rbxassetid://6031094675",
     Info     = "rbxassetid://6031094671",
     Folder   = "rbxassetid://6031075925",
     Car      = "rbxassetid://6031097223",
     Sword    = "rbxassetid://6031082535",
-    Heart    = "rbxassetid://6031082528"
+    Heart    = "rbxassetid://6031082528",
+    Bell     = "rbxassetid://6031075920",
+    Palette  = "rbxassetid://6031075927",
+    Font     = "rbxassetid://6031094665",
+    Image    = "rbxassetid://6031094673",
+    Power    = "rbxassetid://6031094680"
 }
 
 local function formatAssetId(icon)
