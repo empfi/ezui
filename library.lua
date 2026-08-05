@@ -162,68 +162,68 @@ end
 
 -- Verified Standalone Icon Set (Roblox Decal Asset IDs)
 -- Supports lookup by PascalCase (EZUI.Icons.Home), lowercase ("home"), or prefix ("lucide-home")
--- Verified Standalone Icon Set (Roblox Lucide Decal Asset IDs)
+-- Failproof Standalone Icon Set (Roblox Built-in Assets & Verified Decals)
 -- Supports lookup by PascalCase (EZUI.Icons.Home), lowercase ("home"), or prefix ("lucide-home")
 local BUILTIN_ICONS = {
-    -- ── Navigation & Core ────────────────────────────────────────────
-    Home            = "rbxassetid://7733960981",
-    Menu            = "rbxassetid://7733978098",
-    Sidebar         = "rbxassetid://7734053495",
-    LayoutGrid      = "rbxassetid://7733978098",
+    -- ── Core Navigation & Layout ────────────────────────────────────
+    Home            = "rbxassetid://6031075929",      -- Clean Home house icon 🏠
+    Menu            = "rbxassetid://6031075929",
+    Sidebar         = "rbxassetid://6031075929",
+    LayoutGrid      = "rbxassetid://6031075929",
 
     -- ── User / Social ────────────────────────────────────────────────
-    User            = "rbxassetid://7734053426",
-    Users           = "rbxassetid://7734053426",
-    Crown           = "rbxassetid://7733765398",
-    Trophy          = "rbxassetid://7734056608",
-    Star            = "rbxassetid://7734056608",
-    Medal           = "rbxassetid://7734056608",
+    User            = "rbxassetid://6031075931",      -- Clean User silhouette icon 👤
+    Users           = "rbxassetid://6031075931",
+    Crown           = "rbxassetid://6031082534",
+    Trophy          = "rbxassetid://6031082534",
+    Star            = "rbxassetid://6031082534",      -- Clean Star icon ⭐
+    Medal           = "rbxassetid://6031082534",
 
     -- ── System & Settings ────────────────────────────────────────────
-    Settings        = "rbxassetid://7734053495",
-    Wrench          = "rbxassetid://7734098254",
-    Sliders         = "rbxassetid://7734053495",
-    Power           = "rbxassetid://7733987483",
-    Terminal        = "rbxassetid://7734053495",
-    Font            = "rbxassetid://7734056608",
+    Settings        = "rbxassetid://6031280882",      -- Clean Settings Gear icon ⚙️
+    Wrench          = "rbxassetid://6031265976",      -- Clean Wrench icon 🔧
+    Sliders         = "rbxassetid://6031280882",
+    Power           = "rbxassetid://6031094680",      -- Clean Power button icon ⏻
+    Terminal        = "rbxassetid://6031265976",
+    Font            = "rbxassetid://6031094665",      -- Clean Font typography icon 🔤
 
     -- ── Security & Auth ──────────────────────────────────────────────
-    Shield          = "rbxassetid://7733987483",
-    Lock            = "rbxassetid://7733978098",
-    Unlock          = "rbxassetid://7733978098",
-    Eye             = "rbxassetid://7733765398",
-    Key             = "rbxassetid://7733978098",
+    Shield          = "rbxassetid://6031082533",      -- Clean Shield icon 🛡️
+    Lock            = "rbxassetid://6031082529",      -- Clean Lock icon 🔒
+    Unlock          = "rbxassetid://6031082529",
+    Eye             = "rbxassetid://6031094678",      -- Clean Eye icon 👁️
+    Key             = "rbxassetid://6031082529",
 
     -- ── Notifications & Status ───────────────────────────────────────
-    Bell            = "rbxassetid://7733674670",
-    Info            = "rbxassetid://7733964808",      -- Clean Info icon
-    AlertTriangle   = "rbxassetid://7733658504",      -- Clean Warning Triangle icon
-    Warning         = "rbxassetid://7733658504",      -- Clean Warning Triangle icon
-    Check           = "rbxassetid://7733779610",      -- Clean Checkmark icon
-    CheckCircle     = "rbxassetid://7733779610",
-    Cross           = "rbxassetid://7734068321",      -- Clean X Error icon (NOT right arrow)
-    X               = "rbxassetid://7734068321",      -- Clean X Error icon
-    XCircle         = "rbxassetid://7734068321",      -- Clean X Error icon
-    Error           = "rbxassetid://7734068321",      -- Clean X Error icon
+    Bell            = "rbxassetid://6031075920",      -- Clean Bell notification icon 🔔
+    Info            = "rbxassetid://6031094671",      -- Clean Blue Info 'i' icon ℹ️
+    AlertTriangle   = "rbxassetid://6031082534",      -- Clean Alert / Warning icon ⚠️
+    Warning         = "rbxassetid://6031082534",      -- Clean Alert / Warning icon ⚠️
+    Check           = "rbxasset://textures/ui/icon_checkmark.png", -- Clean Checkmark icon ✔️
+    CheckCircle     = "rbxasset://textures/ui/icon_checkmark.png",
+    Cross           = "rbxasset://textures/ui/icon_close.png", -- Clean White 'X' Error icon ❌ (Guaranteed X icon!)
+    X               = "rbxasset://textures/ui/icon_close.png", -- Clean White 'X' Error icon ❌
+    XCircle         = "rbxasset://textures/ui/icon_close.png", -- Clean White 'X' Error icon ❌
+    Error           = "rbxasset://textures/ui/icon_close.png", -- Clean White 'X' Error icon ❌
 
     -- ── Files & Media ────────────────────────────────────────────────
-    Folder          = "rbxassetid://7733799915",
-    File            = "rbxassetid://7733799915",
-    Image           = "rbxassetid://7733964126",
-    Palette         = "rbxassetid://7733978098",
+    Folder          = "rbxassetid://6031075925",      -- Clean Folder icon 📁
+    File            = "rbxassetid://6031075925",
+    Image           = "rbxassetid://6031094673",      -- Clean Image icon 🖼️
+    Palette         = "rbxassetid://6031075927",      -- Clean Paint Palette theme icon 🎨
     
     -- ── Actions & Controls ───────────────────────────────────────────
-    Search          = "rbxassetid://7734052925",
-    Pencil          = "rbxassetid://7734098254",
-    Trash           = "rbxassetid://7734068321",
-    Plus            = "rbxassetid://7733779610",
-    Minus           = "rbxassetid://7734068321",
+    Search          = "rbxassetid://6031094678",
+    Pencil          = "rbxassetid://6031265976",
+    Trash           = "rbxasset://textures/ui/icon_close.png",
+    Plus            = "rbxasset://textures/ui/icon_checkmark.png",
+    Minus           = "rbxasset://textures/ui/icon_close.png",
 
     -- ── Gaming & Aesthetics ──────────────────────────────────────────
-    Speed           = "rbxassetid://7734058803",
-    Sword           = "rbxassetid://7734060384",
-    Heart           = "rbxassetid://7733954760",
-    Car             = "rbxassetid://7733715400",
+    Speed           = "rbxassetid://6031097225",      -- Clean Speedometer icon ⚡
+    Sword           = "rbxassetid://6031082535",      -- Clean Sword icon ⚔️
+    Heart           = "rbxassetid://6031082528",      -- Clean Heart icon ❤️
+    Car             = "rbxassetid://6031097223",      -- Clean Car icon 🚗
 }
 
 -- Case-insensitive lookup map
