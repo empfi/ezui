@@ -460,8 +460,9 @@ local function getNotifyContainer(posName)
     return container
 end
 
-function EZUI:SetNotifyPosition(posName)
+function EZUI:SetNotifyPosition(posName, skipSave)
     self.NotifyPosition = posName or "TopRight"
+    if not skipSave then self:SaveConfig() end
 end
 
 function EZUI:SetNotifyDuration(seconds)
@@ -583,44 +584,132 @@ function EZUI:Notify(data)
     return card
 end
 
-function EZUI:SaveConfig()
-    if writefile then
-        pcall(function()
-            local cfg = {
-                Banner = self.CurrentBannerId or "",
-                Theme = self.CurrentThemeName or "Green",
-                Opacity = self.OpacityValue or 85,
-                Font = self.FontName or "GothamMedium"
-            }
-            writefile("EZUI_Config.json", HttpService:JSONEncode(cfg))
-        end)
-    end
-end
-
-function EZUI:LoadConfig()
-    if readfile and isfile and isfile("EZUI_Config.json") then
-        pcall(function()
-            local content = readfile("EZUI_Config.json")
-            if content and #content > 0 then
-                local cfg = HttpService:JSONDecode(content)
-                if cfg then
-                    local userCfg = self.UserConfig or {}
-                    if cfg.Banner and cfg.Banner ~= "" and not userCfg.Banner then 
-                        self:SetBanner(cfg.Banner, true) 
+function EZUI:_syncConfigToControls(cfg)
+    if not cfg then return end
+    for _, screen in pairs(self.Screens) do
+        for _, tab in ipairs(screen.tabs or {}) do
+            for _, item in ipairs(tab.items or {}) do
+                local nameLower = item.name and item.name:lower() or ""
+                
+                -- Theme Selector
+                if item.type == "selector" and (nameLower:find("theme") or item.isThemeSelector) then
+                    if cfg.Theme and item.options then
+                        for idx, opt in ipairs(item.options) do
+                            local idStr = tostring(opt.id or opt.name or opt)
+                            if idStr:lower() == tostring(cfg.Theme):lower() then
+                                item.value = idx
+                                break
+                            end
+                        end
                     end
-                    if cfg.Theme and not userCfg.Theme then 
-                        self:SetTheme(cfg.Theme, true) 
+                -- Font Selector
+                elseif item.type == "selector" and (nameLower:find("font") or item.isFontSelector) then
+                    if cfg.Font and item.options then
+                        for idx, opt in ipairs(item.options) do
+                            local idStr = tostring(opt.id or opt.name or opt)
+                            if idStr:lower() == tostring(cfg.Font):lower() then
+                                item.value = idx
+                                break
+                            end
+                        end
                     end
-                    if cfg.Opacity and not userCfg.Opacity then 
-                        self:SetOpacity(cfg.Opacity, true) 
+                -- Banner Selector
+                elseif item.type == "selector" and (nameLower:find("banner") or item.isBanner) then
+                    if cfg.Banner and item.options then
+                        for idx, opt in ipairs(item.options) do
+                            local idStr = tostring(opt.id or opt.name or opt)
+                            local formattedOptId = formatAssetId(opt.id or opt.name or opt)
+                            if idStr:lower() == tostring(cfg.Banner):lower() or formattedOptId == cfg.Banner then
+                                item.value = idx
+                                break
+                            end
+                        end
                     end
-                    if cfg.Font and not userCfg.Font then 
-                        self:SetFont(cfg.Font, true) 
+                -- Notify Position Selector
+                elseif item.type == "selector" and (nameLower:find("notify") or nameLower:find("position")) then
+                    if cfg.NotifyPosition and item.options then
+                        for idx, opt in ipairs(item.options) do
+                            local idStr = tostring(opt.id or opt.name or opt)
+                            if idStr:lower() == tostring(cfg.NotifyPosition):lower() then
+                                item.value = idx
+                                break
+                            end
+                        end
+                    end
+                -- Menu Opacity Slider
+                elseif item.type == "slider" and nameLower:find("opacity") then
+                    if cfg.Opacity then
+                        item.value = cfg.Opacity
+                    end
+                -- Watermark Toggle
+                elseif item.type == "toggle" and nameLower:find("watermark") then
+                    if cfg.ShowWatermark ~= nil then
+                        item.value = cfg.ShowWatermark
                     end
                 end
             end
-        end)
+        end
     end
+end
+
+function EZUI:SaveConfig()
+    if not writefile then return end
+    local filename = self.ConfigFileName or ((self.Title or "EZUI") .. "_config.json")
+    local cfg = {
+        Theme = self.CurrentThemeName or (type(self.Theme) == "string" and self.Theme or "Green"),
+        Font = self.FontName or "GothamMedium",
+        Banner = self.CurrentBannerId or "",
+        NotifyPosition = self.NotifyPosition or "TopRight",
+        Opacity = self.OpacityValue or 85,
+        ShowWatermark = self.ShowWatermark ~= false
+    }
+    pcall(function()
+        if isfolder and not isfolder("EZUI_Configs") then
+            makefolder("EZUI_Configs")
+        end
+        local path = (isfolder and isfolder("EZUI_Configs")) and ("EZUI_Configs/" .. filename) or filename
+        writefile(path, HttpService:JSONEncode(cfg))
+    end)
+end
+
+function EZUI:LoadConfig()
+    if not readfile then return end
+    local filename = self.ConfigFileName or ((self.Title or "EZUI") .. "_config.json")
+    local path = (isfolder and isfolder("EZUI_Configs")) and ("EZUI_Configs/" .. filename) or filename
+    local exists = false
+    if isfile then
+        pcall(function() exists = isfile(path) end)
+    end
+    if not exists then return end
+
+    local content = nil
+    pcall(function() content = readfile(path) end)
+    if not content or #content == 0 then return end
+
+    local ok, cfg = pcall(function() return HttpService:JSONDecode(content) end)
+    if not ok or type(cfg) ~= "table" then return end
+
+    local userCfg = self.UserConfig or {}
+    if cfg.Theme and not userCfg.Theme then 
+        self:SetTheme(cfg.Theme, true) 
+    end
+    if cfg.Font and not userCfg.Font then 
+        self:SetFont(cfg.Font, true) 
+    end
+    if cfg.Banner and cfg.Banner ~= "" and not userCfg.Banner then 
+        self:SetBanner(cfg.Banner, true) 
+    end
+    if cfg.NotifyPosition and not userCfg.NotifyPosition then 
+        self:SetNotifyPosition(cfg.NotifyPosition, true) 
+    end
+    if cfg.Opacity and not userCfg.Opacity then 
+        self:SetOpacity(cfg.Opacity, true) 
+    end
+    if cfg.ShowWatermark ~= nil and userCfg.ShowWatermark == nil then 
+        self:SetWatermarkVisible(cfg.ShowWatermark, true) 
+    end
+
+    self:_syncConfigToControls(cfg)
 end
 
 function EZUI:_applyFont()
@@ -733,17 +822,19 @@ function EZUI:SetLogo(logo)
     end
 end
 
-function EZUI:SetWatermarkVisible(visible)
+function EZUI:SetWatermarkVisible(visible, skipSave)
+    self.ShowWatermark = (visible ~= false)
     if self.EzLogoImage and self.EzLogoImage.Image ~= "" then
-        self.EzLogoImage.Visible = visible
+        self.EzLogoImage.Visible = self.ShowWatermark
         if self.EzLogoText then self.EzLogoText.Visible = false end
     elseif self.EzLogoText then
-        self.EzLogoText.Visible = visible
+        self.EzLogoText.Visible = self.ShowWatermark
         if self.EzLogoImage then self.EzLogoImage.Visible = false end
     end
     if self.TitleText then
-        self.TitleText.Visible = visible
+        self.TitleText.Visible = self.ShowWatermark
     end
+    if not skipSave then self:SaveConfig() end
 end
 
 function EZUI:SetBanner(bannerUrlOrAssetId, skipSave)
@@ -827,6 +918,7 @@ function EZUI:_applyTheme()
     end
     if self.ScreenTitleText then self.ScreenTitleText.Font = self.Font end
     if self.TabBar then self.TabBar.BackgroundColor3 = theme.TabBarBg end
+    if self.ActiveLine then self.ActiveLine.BackgroundColor3 = theme.AccentColor end
     if self.HighlightBox then self.HighlightBox.BackgroundColor3 = theme.HighlightBg end
     if self.FooterBar then self.FooterBar.BackgroundColor3 = theme.HeaderBg end
     if self.FooterFiller then self.FooterFiller.BackgroundColor3 = theme.HeaderBg end
@@ -1521,6 +1613,7 @@ function EZUI:_buildHeaders()
 
     if self.ActiveLine then
         self.ActiveLine.Size = UDim2.new(1/n, 0, 0, 2)
+        self.ActiveLine.BackgroundColor3 = self.Theme.AccentColor
         tween(self.ActiveLine, 0.25, {Position = UDim2.new((self.CurrentTabIndex-1)/n, 0, 1, 0)})
     end
 
