@@ -162,6 +162,8 @@ end
 
 -- Verified Standalone Icon Set (Roblox Decal Asset IDs)
 -- Supports lookup by PascalCase (EZUI.Icons.Home), lowercase ("home"), or prefix ("lucide-home")
+-- Verified Standalone Icon Set (Roblox Lucide Decal Asset IDs)
+-- Supports lookup by PascalCase (EZUI.Icons.Home), lowercase ("home"), or prefix ("lucide-home")
 local BUILTIN_ICONS = {
     -- ── Navigation & Core ────────────────────────────────────────────
     Home            = "rbxassetid://7733960981",
@@ -174,54 +176,54 @@ local BUILTIN_ICONS = {
     Users           = "rbxassetid://7734053426",
     Crown           = "rbxassetid://7733765398",
     Trophy          = "rbxassetid://7734056608",
-    Star            = "rbxassetid://6031082534",
+    Star            = "rbxassetid://7734056608",
     Medal           = "rbxassetid://7734056608",
 
-    -- ── System / Settings ────────────────────────────────────────────
+    -- ── System & Settings ────────────────────────────────────────────
     Settings        = "rbxassetid://7734053495",
-    Wrench          = "rbxassetid://6031265976",
+    Wrench          = "rbxassetid://7734098254",
     Sliders         = "rbxassetid://7734053495",
-    Power           = "rbxassetid://6031094680",
-    Terminal        = "rbxassetid://6031094678",
+    Power           = "rbxassetid://7733987483",
+    Terminal        = "rbxassetid://7734053495",
+    Font            = "rbxassetid://7734056608",
 
     -- ── Security & Auth ──────────────────────────────────────────────
-    Shield          = "rbxassetid://6031082533",
-    Lock            = "rbxassetid://6031082529",
-    Unlock          = "rbxassetid://6031082529",
-    Eye             = "rbxassetid://6031094678",
-    Key             = "rbxassetid://6031082529",
+    Shield          = "rbxassetid://7733987483",
+    Lock            = "rbxassetid://7733978098",
+    Unlock          = "rbxassetid://7733978098",
+    Eye             = "rbxassetid://7733765398",
+    Key             = "rbxassetid://7733978098",
 
     -- ── Notifications & Status ───────────────────────────────────────
     Bell            = "rbxassetid://7733674670",
-    Info            = "rbxassetid://6031094671",      -- Clean blue Info badge icon
+    Info            = "rbxassetid://7733964808",      -- Clean Info icon
     AlertTriangle   = "rbxassetid://7733658504",      -- Clean Warning Triangle icon
-    Warning         = "rbxassetid://7733658504",
-    Check           = "rbxassetid://6031094667",      -- Clean Checkmark icon
-    CheckCircle     = "rbxassetid://6031094667",
-    Cross           = "rbxassetid://6031094675",      -- Clean Red/White Error X icon
-    X               = "rbxassetid://6031094675",
-    XCircle         = "rbxassetid://6031094675",      -- Clean Red/White Error X icon
-    Error           = "rbxassetid://6031094675",
+    Warning         = "rbxassetid://7733658504",      -- Clean Warning Triangle icon
+    Check           = "rbxassetid://7733779610",      -- Clean Checkmark icon
+    CheckCircle     = "rbxassetid://7733779610",
+    Cross           = "rbxassetid://7734068321",      -- Clean X Error icon (NOT right arrow)
+    X               = "rbxassetid://7734068321",      -- Clean X Error icon
+    XCircle         = "rbxassetid://7734068321",      -- Clean X Error icon
+    Error           = "rbxassetid://7734068321",      -- Clean X Error icon
 
     -- ── Files & Media ────────────────────────────────────────────────
-    Folder          = "rbxassetid://6031075925",
+    Folder          = "rbxassetid://7733799915",
     File            = "rbxassetid://7733799915",
     Image           = "rbxassetid://7733964126",
+    Palette         = "rbxassetid://7733978098",
     
     -- ── Actions & Controls ───────────────────────────────────────────
     Search          = "rbxassetid://7734052925",
-    Pencil          = "rbxassetid://6031265976",
-    Trash           = "rbxassetid://6031094675",
-    Plus            = "rbxassetid://6031094667",
-    Minus           = "rbxassetid://6031094675",
+    Pencil          = "rbxassetid://7734098254",
+    Trash           = "rbxassetid://7734068321",
+    Plus            = "rbxassetid://7733779610",
+    Minus           = "rbxassetid://7734068321",
 
     -- ── Gaming & Aesthetics ──────────────────────────────────────────
-    Speed           = "rbxassetid://6031097225",
-    Sword           = "rbxassetid://6031082535",
-    Heart           = "rbxassetid://6031082528",
-    Car             = "rbxassetid://6031097223",
-    Palette         = "rbxassetid://6031075927",
-    Font            = "rbxassetid://6031094665",
+    Speed           = "rbxassetid://7734058803",
+    Sword           = "rbxassetid://7734060384",
+    Heart           = "rbxassetid://7733954760",
+    Car             = "rbxassetid://7733715400",
 }
 
 -- Case-insensitive lookup map
