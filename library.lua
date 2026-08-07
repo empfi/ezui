@@ -435,6 +435,8 @@ local function formatAssetId(icon)
         return "rbxassetid://" .. digits
     end
     return str
+end
+
 local function setIconImage(imgLabel, icon)
     if not imgLabel or not icon or icon == "" then
         if imgLabel then
