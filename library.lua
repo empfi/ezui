@@ -261,6 +261,26 @@ local function formatAssetId(icon)
         return "rbxassetid://" .. digits
     end
     return str
+local function setIconImage(imgLabel, icon)
+    if not imgLabel or not icon or icon == "" then
+        if imgLabel then
+            imgLabel.Image = ""
+            imgLabel.ImageRectOffset = Vector2.new(0, 0)
+            imgLabel.ImageRectSize = Vector2.new(0, 0)
+        end
+        return
+    end
+
+    local res = formatAssetId(icon)
+    if type(res) == "table" then
+        imgLabel.Image = tostring(res.Url or res.Id or "")
+        imgLabel.ImageRectOffset = res.ImageRectOffset or Vector2.new(0, 0)
+        imgLabel.ImageRectSize = res.ImageRectSize or Vector2.new(0, 0)
+    else
+        imgLabel.Image = tostring(res)
+        imgLabel.ImageRectOffset = Vector2.new(0, 0)
+        imgLabel.ImageRectSize = Vector2.new(0, 0)
+    end
 end
 
 local function cleanupExistingUI()
@@ -532,7 +552,7 @@ function EZUI:Notify(data)
     iconImg.Size = UDim2.fromOffset(16, 16)
     iconImg.Position = UDim2.fromOffset(12, 18)
     iconImg.BackgroundTransparency = 1
-    iconImg.Image = formatAssetId(iconId)
+    setIconImage(iconImg, iconId)
     iconImg.ImageTransparency = 1
     iconImg.ScaleType = Enum.ScaleType.Fit
     iconImg.Parent = card
@@ -1468,7 +1488,7 @@ function EZUI:_buildTabContent()
                 iconImg.Size = UDim2.fromOffset(14, 14)
                 iconImg.Position = UDim2.fromOffset(16, 7)
                 iconImg.BackgroundTransparency = 1
-                iconImg.Image = formatAssetId(item.icon)
+                setIconImage(iconImg, item.icon)
                 iconImg.ScaleType = Enum.ScaleType.Fit
                 iconImg.Parent = row
                 self.RowInstances[i].IconImage = iconImg
@@ -1640,7 +1660,7 @@ function EZUI:_buildHeaders()
             tabIcon.Size = UDim2.fromOffset(12, 12)
             tabIcon.Position = UDim2.new(0, 6, 0.5, -6)
             tabIcon.BackgroundTransparency = 1
-            tabIcon.Image = formatAssetId(tab.icon)
+            setIconImage(tabIcon, tab.icon)
             tabIcon.ScaleType = Enum.ScaleType.Fit
             tabIcon.Parent = btn
         end
