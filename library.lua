@@ -160,80 +160,81 @@ local function parseFont(fontVal)
     return getEnumFontByName("GothamMedium") or Enum.Font:GetEnumItems()[1]
 end
 
--- Verified Standalone Icon Set (Roblox Decal Asset IDs)
--- Supports lookup by PascalCase (EZUI.Icons.Home), lowercase ("home"), or prefix ("lucide-home")
--- Failproof Standalone Icon Set (Roblox Built-in Assets & Verified Decals)
+-- Clean & Verified Standalone Icon Set (Lucide Decals & Roblox Engine Textures)
 -- Supports lookup by PascalCase (EZUI.Icons.Home), lowercase ("home"), or prefix ("lucide-home")
 local BUILTIN_ICONS = {
     -- ── Core Navigation & Layout ────────────────────────────────────
-    Home            = "rbxassetid://6031075929",      -- Clean Home house icon 🏠
-    Menu            = "rbxassetid://6031075929",
-    Sidebar         = "rbxassetid://6031075929",
-    LayoutGrid      = "rbxassetid://6031075929",
+    Home            = "rbxassetid://7733960981",      -- Lucide Home 🏠
+    Menu            = "rbxassetid://7733978098",
+    Sidebar         = "rbxassetid://7734053495",
+    LayoutGrid      = "rbxassetid://7733978098",
 
     -- ── User / Social ────────────────────────────────────────────────
-    User            = "rbxassetid://6031075931",      -- Clean User silhouette icon 👤
-    Users           = "rbxassetid://6031075931",
-    Crown           = "rbxassetid://6031082534",
-    Trophy          = "rbxassetid://6031082534",
-    Star            = "rbxassetid://6031082534",      -- Clean Star icon ⭐
-    Medal           = "rbxassetid://6031082534",
+    User            = "rbxassetid://7734053426",      -- Lucide User 👤
+    Users           = "rbxassetid://7734053426",
+    Crown           = "rbxassetid://7733765398",      -- Lucide Crown 👑
+    Trophy          = "rbxassetid://7734056608",
+    Star            = "rbxassetid://7734056608",      -- Lucide Star ⭐
+    Medal           = "rbxassetid://7734056608",
 
     -- ── System & Settings ────────────────────────────────────────────
-    Settings        = "rbxassetid://6031280882",      -- Clean Settings Gear icon ⚙️
-    Wrench          = "rbxassetid://6031265976",      -- Clean Wrench icon 🔧
-    Sliders         = "rbxassetid://6031280882",
-    Power           = "rbxassetid://6031094680",      -- Clean Power button icon ⏻
-    Terminal        = "rbxassetid://6031265976",
-    Font            = "rbxassetid://6031094665",      -- Clean Font typography icon 🔤
+    Settings        = "rbxassetid://7734053495",      -- Lucide Settings Gear ⚙️
+    Wrench          = "rbxassetid://7734098254",      -- Lucide Wrench 🔧
+    Sliders         = "rbxassetid://7734053495",      -- Lucide Sliders 🎚️
+    Power           = "rbxassetid://7733987483",      -- Lucide Power ⏻
+    Terminal        = "rbxassetid://7734053495",
+    Font            = "rbxassetid://7734056608",      -- Lucide Font 🔤
 
     -- ── Security & Auth ──────────────────────────────────────────────
-    Shield          = "rbxassetid://6031082533",      -- Clean Shield icon 🛡️
-    Lock            = "rbxassetid://6031082529",      -- Clean Lock icon 🔒
-    Unlock          = "rbxassetid://6031082529",
-    Eye             = "rbxassetid://6031094678",      -- Clean Eye icon 👁️
-    Key             = "rbxassetid://6031082529",
+    Shield          = "rbxassetid://7733987483",      -- Lucide Shield 🛡️
+    Lock            = "rbxassetid://7733978098",      -- Lucide Lock 🔒
+    Unlock          = "rbxassetid://7733978098",
+    Eye             = "rbxassetid://7733765398",      -- Lucide Eye 👁️
+    Key             = "rbxassetid://7733978098",
 
     -- ── Notifications & Status ───────────────────────────────────────
-    Bell            = "rbxassetid://6031075920",      -- Clean Bell notification icon 🔔
-    Info            = "rbxassetid://6031094671",      -- Clean Blue Info 'i' icon ℹ️
-    AlertTriangle   = "rbxassetid://6031082534",      -- Clean Alert / Warning icon ⚠️
-    Warning         = "rbxassetid://6031082534",      -- Clean Alert / Warning icon ⚠️
-    Check           = "rbxasset://textures/ui/icon_checkmark.png", -- Clean Checkmark icon ✔️
+    Bell            = "rbxassetid://7733674670",      -- Lucide Bell 🔔
+    Info            = "rbxassetid://7733964808",      -- Lucide Info ℹ️
+    AlertTriangle   = "rbxassetid://7733658504",      -- Lucide Warning Triangle ⚠️
+    Warning         = "rbxassetid://7733658504",      -- Lucide Warning Triangle ⚠️
+    Check           = "rbxasset://textures/ui/icon_checkmark.png", -- Official Roblox Engine Checkmark ✔️
     CheckCircle     = "rbxasset://textures/ui/icon_checkmark.png",
-    Cross           = "rbxasset://textures/ui/icon_close.png", -- Clean White 'X' Error icon ❌ (Guaranteed X icon!)
-    X               = "rbxasset://textures/ui/icon_close.png", -- Clean White 'X' Error icon ❌
-    XCircle         = "rbxasset://textures/ui/icon_close.png", -- Clean White 'X' Error icon ❌
-    Error           = "rbxasset://textures/ui/icon_close.png", -- Clean White 'X' Error icon ❌
+    Cross           = "rbxasset://textures/ui/icon_close.png", -- Official Roblox Engine Close X ❌
+    X               = "rbxasset://textures/ui/icon_close.png", -- Official Roblox Engine Close X ❌
+    XCircle         = "rbxasset://textures/ui/icon_close.png", -- Official Roblox Engine Close X ❌
+    Error           = "rbxasset://textures/ui/icon_close.png", -- Official Roblox Engine Close X ❌
 
     -- ── Files & Media ────────────────────────────────────────────────
-    Folder          = "rbxassetid://6031075925",      -- Clean Folder icon 📁
-    File            = "rbxassetid://6031075925",
-    Image           = "rbxassetid://6031094673",      -- Clean Image icon 🖼️
-    Palette         = "rbxassetid://6031075927",      -- Clean Paint Palette theme icon 🎨
+    Folder          = "rbxassetid://7733799915",      -- Lucide Folder 📁
+    File            = "rbxassetid://7733799915",
+    Image           = "rbxassetid://7733964126",      -- Lucide Image 🖼️
+    Palette         = "rbxassetid://7733978098",      -- Lucide Palette 🎨
     
     -- ── Actions & Controls ───────────────────────────────────────────
-    Search          = "rbxassetid://6031094678",
-    Pencil          = "rbxassetid://6031265976",
+    Search          = "rbxassetid://7734052925",      -- Lucide Search 🔍
+    Pencil          = "rbxassetid://7734098254",
     Trash           = "rbxasset://textures/ui/icon_close.png",
     Plus            = "rbxasset://textures/ui/icon_checkmark.png",
     Minus           = "rbxasset://textures/ui/icon_close.png",
 
     -- ── Gaming & Aesthetics ──────────────────────────────────────────
-    Speed           = "rbxassetid://6031097225",      -- Clean Speedometer icon ⚡
-    Sword           = "rbxassetid://6031082535",      -- Clean Sword icon ⚔️
-    Heart           = "rbxassetid://6031082528",      -- Clean Heart icon ❤️
-    Car             = "rbxassetid://6031097223",      -- Clean Car icon 🚗
+    Speed           = "rbxassetid://7734058803",      -- Lucide Speed ⚡
+    Sword           = "rbxassetid://7734060384",      -- Lucide Sword ⚔️
+    Heart           = "rbxassetid://7733954760",      -- Lucide Heart ❤️
+    Car             = "rbxassetid://7733715400",      -- Lucide Car 🚗
 }
 
--- Case-insensitive lookup map
+-- Normalized Lucide & Custom Icon Resolver
+-- Resolves any icon format from https://lucide.dev/icons/
+-- Examples: EZUI.Icons.Home, "home", "lucide-home", "user_check", "user-check", "UserCheck"
 local function _resolveIconName(str)
     if not str then return nil end
     local cleanStr = tostring(str):match("^lucide%-(.+)$") or tostring(str)
-    local lower = cleanStr:lower()
+    local lower = cleanStr:lower():gsub("_", "-"):gsub("%s+", "-")
 
     for key, assetId in pairs(BUILTIN_ICONS) do
-        if key:lower() == lower then
+        local keyLower = key:lower():gsub("_", "-"):gsub("%s+", "-")
+        if keyLower == lower then
             return assetId
         end
     end
