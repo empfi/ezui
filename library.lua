@@ -164,55 +164,55 @@ end
 -- Supports lookup by PascalCase (EZUI.Icons.Home), lowercase ("home"), or prefix ("lucide-home")
 local BUILTIN_ICONS = {
     -- ── Core Navigation & Layout ────────────────────────────────────
-    Home            = "rbxassetid://7733960981",      -- Lucide Home 🏠
-    Menu            = "rbxassetid://7733978098",
-    Sidebar         = "rbxassetid://7734053495",
-    LayoutGrid      = "rbxassetid://7733978098",
+    Home            = "rbxassetid://10709762879",      -- Fluent Lucide Home 🏠
+    Menu            = "rbxassetid://10709796014",
+    Sidebar         = "rbxassetid://10709796440",
+    LayoutGrid      = "rbxassetid://10709796014",
 
     -- ── User / Social ────────────────────────────────────────────────
-    User            = "rbxassetid://7734053426",      -- Lucide User 👤
-    Users           = "rbxassetid://7734053426",
-    Crown           = "rbxassetid://7733765398",      -- Lucide Crown 👑
-    Trophy          = "rbxassetid://7734056608",
-    Star            = "rbxassetid://7734056608",      -- Lucide Star ⭐
-    Medal           = "rbxassetid://7734056608",
+    User            = "rbxassetid://10709813840",      -- Fluent Lucide User 👤
+    Users           = "rbxassetid://10709814467",
+    Crown           = "rbxassetid://10709788484",      -- Fluent Lucide Crown 👑
+    Trophy          = "rbxassetid://10709812739",
+    Star            = "rbxassetid://10709808847",      -- Fluent Lucide Star ⭐
+    Medal           = "rbxassetid://10709769406",
 
     -- ── System & Settings ────────────────────────────────────────────
-    Settings        = "rbxassetid://7734053495",      -- Lucide Settings Gear ⚙️
-    Wrench          = "rbxassetid://7734098254",      -- Lucide Wrench 🔧
-    Sliders         = "rbxassetid://7734053495",      -- Lucide Sliders 🎚️
-    Power           = "rbxassetid://7733987483",      -- Lucide Power ⏻
-    Terminal        = "rbxassetid://7734053495",
-    Font            = "rbxassetid://7734056608",      -- Lucide Font 🔤
+    Settings        = "rbxassetid://10709806440",      -- Fluent Lucide Settings Gear ⚙️
+    Wrench          = "rbxassetid://10709816353",      -- Fluent Lucide Wrench 🔧
+    Sliders         = "rbxassetid://10709807572",      -- Fluent Lucide Sliders 🎚️
+    Power           = "rbxassetid://10709802260",      -- Fluent Lucide Power ⏻
+    Terminal        = "rbxassetid://10709810488",
+    Font            = "rbxassetid://10709811440",      -- Fluent Lucide Type/Font 'A' 🔤
 
     -- ── Security & Auth ──────────────────────────────────────────────
-    Shield          = "rbxassetid://7733987483",      -- Lucide Shield 🛡️
-    Lock            = "rbxassetid://7733978098",      -- Lucide Lock 🔒
-    Unlock          = "rbxassetid://7733978098",
-    Eye             = "rbxassetid://7733765398",      -- Lucide Eye 👁️
-    Key             = "rbxassetid://7733978098",
+    Shield          = "rbxassetid://10709806967",      -- Fluent Lucide Shield 🛡️
+    Lock            = "rbxassetid://10709797280",      -- Fluent Lucide Lock 🔒
+    Unlock          = "rbxassetid://10709813426",
+    Eye             = "rbxassetid://10709791583",      -- Fluent Lucide Eye 👁️
+    Key             = "rbxassetid://10709795774",
 
     -- ── Notifications & Status ───────────────────────────────────────
-    Bell            = "rbxassetid://7733674670",      -- Lucide Bell 🔔
-    Info            = "rbxassetid://7733964808",      -- Lucide Info ℹ️
-    AlertTriangle   = "rbxassetid://7733658504",      -- Lucide Warning Triangle ⚠️
-    Warning         = "rbxassetid://7733658504",      -- Lucide Warning Triangle ⚠️
-    Check           = "rbxasset://textures/ui/icon_checkmark.png", -- Official Roblox Engine Checkmark ✔️
+    Bell            = "rbxassetid://10709775704",      -- Fluent Lucide Bell 🔔
+    Info            = "rbxassetid://10709752996",      -- Fluent Lucide Info Circle ℹ️
+    AlertTriangle   = "rbxassetid://10709753149",      -- Fluent Lucide Alert Triangle ⚠️
+    Warning         = "rbxassetid://10709753149",      -- Fluent Lucide Alert Triangle ⚠️
+    Check           = "rbxasset://textures/ui/icon_checkmark.png", -- Official Engine Checkmark ✔️
     CheckCircle     = "rbxasset://textures/ui/icon_checkmark.png",
-    Cross           = "rbxasset://textures/ui/icon_close.png", -- Official Roblox Engine Close X ❌
-    X               = "rbxasset://textures/ui/icon_close.png", -- Official Roblox Engine Close X ❌
-    XCircle         = "rbxasset://textures/ui/icon_close.png", -- Official Roblox Engine Close X ❌
-    Error           = "rbxasset://textures/ui/icon_close.png", -- Official Roblox Engine Close X ❌
+    Cross           = "rbxasset://textures/ui/icon_close.png", -- Official Engine Close X ❌
+    X               = "rbxasset://textures/ui/icon_close.png", -- Official Engine Close X ❌
+    XCircle         = "rbxasset://textures/ui/icon_close.png", -- Official Engine Close X ❌
+    Error           = "rbxasset://textures/ui/icon_close.png", -- Official Engine Close X ❌
 
     -- ── Files & Media ────────────────────────────────────────────────
-    Folder          = "rbxassetid://7733799915",      -- Lucide Folder 📁
-    File            = "rbxassetid://7733799915",
-    Image           = "rbxassetid://7733964126",      -- Lucide Image 🖼️
-    Palette         = "rbxassetid://7733978098",      -- Lucide Palette 🎨
+    Folder          = "rbxassetid://10709791763",      -- Fluent Lucide Folder 📁
+    File            = "rbxassetid://10709790948",
+    Image           = "rbxassetid://10709795004",      -- Fluent Lucide Image 🖼️
+    Palette         = "rbxassetid://10709796440",      -- Fluent Lucide Palette 🎨
     
     -- ── Actions & Controls ───────────────────────────────────────────
-    Search          = "rbxassetid://7734052925",      -- Lucide Search 🔍
-    Pencil          = "rbxassetid://7734098254",
+    Search          = "rbxassetid://10709805646",      -- Fluent Lucide Search 🔍
+    Pencil          = "rbxassetid://10709800778",
     Trash           = "rbxasset://textures/ui/icon_close.png",
     Plus            = "rbxasset://textures/ui/icon_checkmark.png",
     Minus           = "rbxasset://textures/ui/icon_close.png",
